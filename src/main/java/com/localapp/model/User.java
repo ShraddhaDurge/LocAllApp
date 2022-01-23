@@ -22,8 +22,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class User implements Serializable {
 
-
-
 	private static final AtomicInteger count = new AtomicInteger(0); 
 	@Id
 	@Column
@@ -38,6 +36,14 @@ public class User implements Serializable {
 	String password;
 	@Column(name ="role")
 	String role;
+
+	public User(String username, String phoneno, String email, String password, String role) {
+		this.username = username;
+		this.phoneno = phoneno;
+		this.email = email;
+		this.password = password;
+		this.role = role;
+	}
 
 	public int getId() {
 		return id;

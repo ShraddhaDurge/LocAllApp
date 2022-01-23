@@ -1,4 +1,4 @@
-package com.localapp.model;
+package com.localapp.PayloadRequest;
 
 
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserLogin {
+public class LoginRequest {
 	String email;
 	String password;
 

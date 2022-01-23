@@ -1,8 +1,11 @@
 package com.localapp.controller;
 
+import com.localapp.PayloadResponse.MessageResponse;
+import com.localapp.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,8 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import com.localapp.model.User;
-import com.localapp.model.UserLogin;
-import com.localapp.service.UserService;
+import com.localapp.PayloadRequest.LoginRequest;
 
 
 @RequestMapping("/user")
@@ -26,52 +28,38 @@ public class UserController {
 	
 	
 	@PostMapping("/register")
-	public User saveUser(@RequestBody User user) {
+	public ResponseEntity<?> saveUser(@RequestBody User newUser) {
 
-		User newuser = new User();
-
-		System.out.println(user);
-
-		try
-		{
-			newuser = userService.saveUserByuserName(user.getUsername(), user.getPhoneno(), user.getEmail(), user.getPassword(), user.getRole());
-
-			if(newuser != null) {
-				logger.info("User: {} saved successfully!",newuser.getUsername());
-				return newuser;
-			}
-			else
-			{
-				logger.error("User: {} could not be saved successfully!",user.getUsername());
-				return null;
-			}
+		//check if user email already exist in database
+		if (userService.userExistsByEmail(newUser.getEmail())) {
+			return ResponseEntity
+					.badRequest()
+					.body(new MessageResponse("Error: Email is already taken!"));
 		}
+		User user = new User(newUser.getUsername(),newUser.getPhoneno() ,newUser.getEmail(), newUser.getPassword(), newUser.getRole());
 
-		catch(Exception e)
-		{
-			logger.error("User: {} could not be saved successfully!",user.getUsername());
-		}
+		userService.saveUser(user);             //save new user details in database
+		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 
-		return new User();
 	}
 	
 	@PostMapping("/login")
-	public String checkUserLogin(@RequestBody UserLogin userObject) {
-		// Checks if user present in database, if yes returns userId
-
-		User checkuser = new User();
+	public ResponseEntity<?> checkUserLogin(@RequestBody LoginRequest userObject) {
+		System.out.println(userObject);
 		try
 		{
 			logger.info("Authenticating User with Email: {} :",userObject.getEmail());
-			checkuser = userService.checkUser(userObject);
+			User checkuser = userService.checkUser(userObject);
+			System.out.println(checkuser);
 			if(checkuser!=null)
 			{
 				logger.info("SUCCESS");
-				return checkuser.getEmail();
+				return ResponseEntity.ok().body(checkuser);
 			}
 			else
-				logger.error("FAILURE");
-			return null;
+				return ResponseEntity
+						.badRequest()
+					.body(new MessageResponse("Error: User does not exists!"));
 		}
 		catch(Exception e)
 		{
