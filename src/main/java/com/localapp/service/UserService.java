@@ -18,13 +18,27 @@ public class UserService{
 
 	private static final Logger logger = LogManager.getLogger(UserService.class);
 
-	public void saveUser(User user) {
+	public User saveUser(User user) {
 		userRepository.save(user);
+		return findByEmail(user.getEmail());
 	}
 
 	public Boolean userExistsByEmail( String email) {
 		return userRepository.existsByEmail(email);
 	}
+
+	public User findByEmail( String email) {
+		return userRepository.findByEmail(email);
+	}
+
+	public User findById( int id) {
+		return userRepository.findById(id);
+	}
+
+	public Boolean existsById( int id) {
+		return userRepository.existsById(id);
+	}
+
 
 
 	public User checkUser(LoginRequest userObject) {

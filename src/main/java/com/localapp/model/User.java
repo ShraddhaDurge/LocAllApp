@@ -3,29 +3,23 @@ package com.localapp.model;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-
-@SuppressWarnings("serial")
 @Data
 @Entity
 @Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
-public class User implements Serializable {
+public class User{
 
-	private static final AtomicInteger count = new AtomicInteger(0); 
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Id
 	@Column
-	int id = count.incrementAndGet()-1 ;
+	int id;
 	@Column(name ="username")
 	String username;
 	@Column(name ="phoneno")

@@ -1,6 +1,7 @@
 package com.localapp.controller;
 
 import com.localapp.PayloadResponse.MessageResponse;
+import com.localapp.PayloadResponse.RegisterResponse;
 import com.localapp.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,8 +39,9 @@ public class UserController {
 		}
 		User user = new User(newUser.getUsername(),newUser.getPhoneno() ,newUser.getEmail(), newUser.getPassword(), newUser.getRole());
 
-		userService.saveUser(user);             //save new user details in database
-		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+		User registeredUser = userService.saveUser(user);             //save new user details in database
+
+		return ResponseEntity.ok(new RegisterResponse("User registered successfully!",registeredUser));
 
 	}
 	
