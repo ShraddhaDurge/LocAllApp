@@ -26,8 +26,8 @@ public class UserController {
 
 	@Autowired
 	UserService userService;
-	
-	
+
+	//register users and save user data in database
 	@PostMapping("/register")
 	public ResponseEntity<?> saveUser(@RequestBody User newUser) {
 
@@ -44,7 +44,8 @@ public class UserController {
 		return ResponseEntity.ok(new RegisterResponse("User registered successfully!",registeredUser));
 
 	}
-	
+
+	//authenticate users
 	@PostMapping("/login")
 	public ResponseEntity<?> checkUserLogin(@RequestBody LoginRequest userObject) {
 		System.out.println(userObject);

@@ -26,6 +26,8 @@ public class VendorService {
 
     private static final Logger logger = LogManager.getLogger(UserService.class);
 
+
+    //save business corresponding to specific vendor
     public Business saveVendorBusiness(Business business, int userId) {
         Set<Pincode> pincodes = business.getPincodes();
 
@@ -38,6 +40,7 @@ public class VendorService {
 
     }
 
+    //save business in database
     public void saveBusiness(Business business) {
 
         businessRepository.save(business);
@@ -59,8 +62,8 @@ public class VendorService {
         return businessRepository.findByGstin(gstin);
     }
 
+    //save business license in database
     public void uploadBusinessLicense(int bid, byte[] imageBytes) throws IOException {
-
         Business business = getById(bid);
         System.out.println(business + "  "+imageBytes);
         String encodedImage = Base64Utils.encodeToString(imageBytes);

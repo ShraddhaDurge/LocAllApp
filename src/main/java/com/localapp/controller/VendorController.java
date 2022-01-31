@@ -33,6 +33,7 @@ public class VendorController {
     @Autowired
     UserService userService;
 
+    //Post endpoint for vendors to register their business
     @PostMapping("/register/{userId}")
     public ResponseEntity<?> registerBusiness(@PathVariable("userId") int userId, @RequestBody Business newBusiness) {
 
@@ -44,7 +45,7 @@ public class VendorController {
                     .body(new MessageResponse("Error: Business already exist by this gstin!"));
         }
 
-        Set<Pincode> pinSet = new HashSet<>();
+        Set<Pincode> pinSet = new HashSet<>(); //Convert pincode list to set
         pinSet.addAll(newBusiness.getPincodes());
         System.out.println(pinSet);
 
@@ -56,7 +57,7 @@ public class VendorController {
 
     }
 
-    //Post endpoint to add image of an event in database
+    //Post endpoint to upload business license in database
     @PostMapping(value = "/uploadBusinessLicense/{bid}", consumes= MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadBusinessLicense(@PathVariable(value = "bid") int bid, @RequestParam(value = "file") MultipartFile image){
 
@@ -68,7 +69,7 @@ public class VendorController {
         System.out.println(bid+"  "+image);
 
         try {
-            //add images of an event in database
+            //add license of business in database
             byte[] imageBytes = image.getBytes();
             vendorService.uploadBusinessLicense(bid,imageBytes);
             return ResponseEntity.ok(new MessageResponse("License uploaded Successfully!"));

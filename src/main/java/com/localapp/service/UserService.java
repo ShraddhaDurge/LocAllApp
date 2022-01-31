@@ -40,7 +40,7 @@ public class UserService{
 	}
 
 
-
+	//check if valid user is trying to login
 	public User checkUser(LoginRequest userObject) {
 		String reversedPassword = new StringBuffer(decodeString(userObject.getPassword())).reverse().toString();
 		System.out.println(reversedPassword);
@@ -63,6 +63,8 @@ public class UserService{
 			return null;
 		}
 	}
+
+	//decode base64 string
 	public String decodeString(String encodedPassword) {
 
 		String decoded = new String(Base64.getDecoder().decode(encodedPassword));
