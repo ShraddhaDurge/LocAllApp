@@ -49,7 +49,7 @@ public class BusinessController {
         System.out.println(business);
         Business businessRegistered = vendorService.saveVendorBusiness(business,userId);             //save new user details in database
 
-        return ResponseEntity.ok(new BusinessRegResponse("Business registered successfully!", businessRegistered));
+        return ResponseEntity.ok(new BusinessRegResponse("Business registered successfully!", businessRegistered,businessRegistered.getUser().getRole()));
 
     }
 

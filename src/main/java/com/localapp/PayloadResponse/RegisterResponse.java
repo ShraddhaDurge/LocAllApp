@@ -5,10 +5,12 @@ import com.localapp.model.User;
 public class RegisterResponse {
 	private String message;
 	private User user;
+	private  String role;
 
-	public RegisterResponse(String message, User user) {
+	public RegisterResponse(String message, User user,String role) {
 		this.message = message;
 		this.user = user;
+		this.role = role;
 	}
 
 	public String getMessage() {
@@ -25,6 +27,14 @@ public class RegisterResponse {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
 	}
 
 	@Override

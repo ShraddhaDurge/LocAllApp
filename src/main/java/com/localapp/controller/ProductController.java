@@ -2,20 +2,13 @@ package com.localapp.controller;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.localapp.PayloadResponse.MessageResponse;
@@ -35,8 +28,8 @@ public class ProductController {
     @Autowired
     BusinessService businessService;
 
-    @PostMapping("/register/{business_id}")
-    public ResponseEntity<?> registerProduct(@PathVariable("business_id") int business_id, @RequestBody Product newProduct) {
+    @PostMapping("/add/{business_id}")
+    public ResponseEntity<?> addProduct(@PathVariable("business_id") int business_id, @RequestBody Product newProduct) {
 
         System.out.println(newProduct);
 
@@ -52,17 +45,12 @@ public class ProductController {
 
     }
 
-    @PostMapping("/update/{business_id}")
-    public ResponseEntity<?> updateProduct(@PathVariable("business_id") int business_id, @RequestBody Product updatedProduct) {
+    @PostMapping("/update")
+    public ResponseEntity<?> updateProduct( @RequestBody Product updatedProduct) {
 
         System.out.println(updatedProduct);
 
-        Set<ProductCategoryTags> productTags = new HashSet<>(); //Convert Product Tags list to set
-        productTags.addAll(updatedProduct.getProductTags());
-        System.out.println(productTags);
-
-        System.out.println(updatedProduct);
-        Product productUpdated = productService.updateVendorProduct(updatedProduct,business_id);         //save new user details in database
+        Product productUpdated = productService.updateVendorProduct(updatedProduct);         //save new user details in database
 
         return ResponseEntity.ok(new ProductRegResponse("Product Updated successfully!", productUpdated));
 
@@ -106,4 +94,14 @@ public class ProductController {
         }
     }
 
+    @RequestMapping(value = "/getList/{businessId}", method = RequestMethod.GET)
+    public List<Product> getBusinessProducts(@PathVariable(value = "businessId") int businessId) {
+        return productService.getBusinessProducts(businessId);
+    }
+
+    //Get product data by productId
+    @GetMapping(value = "/{id}")
+    public Product getProductById(@PathVariable("id") int id) {
+        return productService.getById(id);
+    }
 }

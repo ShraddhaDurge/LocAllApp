@@ -1,8 +1,10 @@
 package com.localapp.service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
+import com.localapp.model.Business;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
@@ -32,16 +34,21 @@ public class ProductService {
         return product;
     }
 
-    public Product updateVendorProduct(Product product , int business_id) {
+
+    public List<Product> getBusinessProducts(int businessId) {
+        // TODO Auto-generated method stub
+        return productRepository.findByBusiness(businessService.getById(businessId));
+
+    }
+
+    public Product updateVendorProduct(Product product) {
         Product updateProduct = productRepository.findById(product.getProductId());
         Set<ProductCategoryTags> productTags = product.getProductTags();
         updateProduct.setProductName(product.getProductName());
         updateProduct.setProductTags(productTags);
         updateProduct.setQuantAvailable(product.getQuantAvailable());
         updateProduct.setPrice(product.getPrice());
-        updateProduct.setProductImage(product.getProductImage());
         updateProduct.setProductDesc(product.getProductDesc());
-        product.setBusiness(businessService.getById(business_id));
         productRepository.save(product);
 
         return product;
@@ -53,7 +60,7 @@ public class ProductService {
     }
 
     public Product getById(int productId) {
-        return productRepository.getById(productId);
+        return productRepository.findById(productId);
     }
 
     public Product deleteById(int productId) {

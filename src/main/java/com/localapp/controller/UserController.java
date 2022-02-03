@@ -1,5 +1,6 @@
 package com.localapp.controller;
 
+import com.localapp.PayloadResponse.BusinessRegResponse;
 import com.localapp.PayloadResponse.MessageResponse;
 import com.localapp.PayloadResponse.RegisterResponse;
 import com.localapp.service.UserService;
@@ -45,7 +46,7 @@ public class UserController {
 
 		User registeredUser = userService.saveUser(user);             //save new user details in database
 
-		return ResponseEntity.ok(new RegisterResponse("User registered successfully!",registeredUser));
+		return ResponseEntity.ok(new RegisterResponse("User registered successfully!",registeredUser,registeredUser.getRole()));
 
 	}
 
@@ -57,14 +58,15 @@ public class UserController {
 		{
 			logger.info("Authenticating User with Email: {} :",userObject.getEmail());
 			User checkuser = userService.checkUser(userObject);
+
 			System.out.println(checkuser);
 			if(checkuser!=null)
 			{
 				logger.info("SUCCESS");
-				if(checkuser.getRole()=="customer" || checkuser.getRole()=="admin")
-					return ResponseEntity.ok().body(checkuser);
+				if(checkuser.getRole().equals("vendor"))
+					return ResponseEntity.ok(new BusinessRegResponse("Vendor Login successfully!",vendorService.getBusinessVendor(checkuser),checkuser.getRole()));
 				else
-					return ResponseEntity.ok().body(vendorService.getBusinessVendor(checkuser));
+					return ResponseEntity.ok(new RegisterResponse("User login successfully!",checkuser,checkuser.getRole()));
 			}
 			else
 				return ResponseEntity

@@ -5,10 +5,12 @@ import com.localapp.model.Business;
 public class BusinessRegResponse {
 	private String message;
 	private Business business;
+	private String role;
 
-	public BusinessRegResponse(String message, Business business) {
+	public BusinessRegResponse(String message, Business business, String role) {
 		this.message = message;
 		this.business = business;
+		this.role = role;
 	}
 
 	public String getMessage() {
@@ -25,6 +27,14 @@ public class BusinessRegResponse {
 
 	public void setBusiness(Business business) {
 		this.business = business;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
 	}
 
 	@Override

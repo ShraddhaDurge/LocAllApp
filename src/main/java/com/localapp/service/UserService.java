@@ -2,6 +2,7 @@ package com.localapp.service;
 
 import java.util.Base64;
 
+import com.localapp.model.Business;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ public class UserService{
 	public Boolean existsById( int id) {
 		return userRepository.existsById(id);
 	}
+
 
 
 	//check if valid user is trying to login
