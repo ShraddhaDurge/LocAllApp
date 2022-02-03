@@ -1,18 +1,11 @@
 package com.localapp.model;
 
-
 import javax.persistence.*;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 @Data
 @Entity
@@ -41,6 +34,9 @@ public class Business{
         @Column(name = "license")
         String license;
 
+        @Column(name = "status")
+        String status;
+
 
     @ManyToMany(fetch = FetchType.EAGER,  cascade = { CascadeType.PERSIST, CascadeType.MERGE } )
     @JoinTable(name = "business_pincodes",
@@ -65,14 +61,16 @@ public class Business{
         this.gstin = gstin;
         this.license = license;
         this.pincodes = pincodes;
+
     }
 
-    public Business(String businessName, String businessCategory, String address, String gstin, Set<Pincode> pincodes) {
+    public Business(String businessName, String businessCategory, String address, String gstin, Set<Pincode> pincodes, String status) {
         this.businessName = businessName;
         this.businessCategory = businessCategory;
         this.address = address;
         this.gstin = gstin;
         this.pincodes = pincodes;
+        this.status = status;
     }
 
     public int getBusiness_id() {

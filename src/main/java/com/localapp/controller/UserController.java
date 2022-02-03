@@ -3,6 +3,7 @@ package com.localapp.controller;
 import com.localapp.PayloadResponse.MessageResponse;
 import com.localapp.PayloadResponse.RegisterResponse;
 import com.localapp.service.UserService;
+import com.localapp.service.BusinessService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class UserController {
 
 	@Autowired
 	UserService userService;
+
+	@Autowired
+	BusinessService vendorService;
 
 	//register users and save user data in database
 	@PostMapping("/register")
@@ -57,7 +61,10 @@ public class UserController {
 			if(checkuser!=null)
 			{
 				logger.info("SUCCESS");
-				return ResponseEntity.ok().body(checkuser);
+				if(checkuser.getRole()=="customer" || checkuser.getRole()=="admin")
+					return ResponseEntity.ok().body(checkuser);
+				else
+					return ResponseEntity.ok().body(vendorService.getBusinessVendor(checkuser));
 			}
 			else
 				return ResponseEntity

@@ -4,8 +4,7 @@ import com.localapp.PayloadResponse.BusinessRegResponse;
 import com.localapp.PayloadResponse.MessageResponse;
 import com.localapp.model.Business;
 import com.localapp.model.Pincode;
-import com.localapp.service.UserService;
-import com.localapp.service.VendorService;
+import com.localapp.service.BusinessService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-import com.localapp.model.User;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -25,13 +23,11 @@ import java.util.Set;
 @RequestMapping("/vendor")
 @RestController
 @CrossOrigin(origins="http://localhost:3000")
-public class VendorController {
+public class BusinessController {
     private static final Logger logger = LogManager.getLogger(UserController.class);
 
     @Autowired
-    VendorService vendorService;
-    @Autowired
-    UserService userService;
+    BusinessService vendorService;
 
     //Post endpoint for vendors to register their business
     @PostMapping("/register/{userId}")
@@ -49,7 +45,7 @@ public class VendorController {
         pinSet.addAll(newBusiness.getPincodes());
         System.out.println(pinSet);
 
-        Business business = new Business(newBusiness.getBusinessName(), newBusiness.getBusinessCategory(), newBusiness.getAddress(), newBusiness.getGstin(), pinSet);
+        Business business = new Business(newBusiness.getBusinessName(), newBusiness.getBusinessCategory(), newBusiness.getAddress(), newBusiness.getGstin(), pinSet, "Pending");
         System.out.println(business);
         Business businessRegistered = vendorService.saveVendorBusiness(business,userId);             //save new user details in database
 

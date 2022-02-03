@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class VendorService {
+public class BusinessService {
 
     @Autowired
     BusinessRepository businessRepository;
@@ -29,12 +29,7 @@ public class VendorService {
 
     //save business corresponding to specific vendor
     public Business saveVendorBusiness(Business business, int userId) {
-        Set<Pincode> pincodes = business.getPincodes();
-
-        business.setPincodes(pincodes);
-
         business.setUser(userService.findById(userId));
-
         businessRepository.save(business);
         return findByGstin(business.getGstin());
 
@@ -69,5 +64,10 @@ public class VendorService {
         String encodedImage = Base64Utils.encodeToString(imageBytes);
         business.setLicense(encodedImage);
         saveBusiness(business);
+    }
+    public Business getBusinessVendor(User user) {
+        // TODO Auto-generated method stub
+        return businessRepository.findByUser(user);
+
     }
 }
