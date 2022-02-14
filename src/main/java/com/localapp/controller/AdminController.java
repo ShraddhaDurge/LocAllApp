@@ -26,7 +26,11 @@ public class AdminController {
     @RequestMapping(value = "/vendorsToVerify")
     public List<Business> vendorsToVerify() {
         List<Business> businesses = adminService.findBusinesses();
-
+        if(businesses.size()==0)
+        {
+            System.out.println("No Vendors to Verify");
+            return null;
+        }
         System.out.println(businesses.get(0).getBusinessName());
         return businesses;
     }
