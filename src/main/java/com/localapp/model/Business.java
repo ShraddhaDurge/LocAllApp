@@ -39,9 +39,9 @@ public class Business{
 
 
     @ManyToMany(fetch = FetchType.EAGER,  cascade = { CascadeType.PERSIST, CascadeType.MERGE } )
-    @JoinTable(name = "business_pincodes",
+    @JoinTable(name = "business_deliver_pincodes",
             joinColumns = @JoinColumn(name = "business_business_id"),
-            inverseJoinColumns = @JoinColumn(name = "pincodes_pinid")
+            inverseJoinColumns = @JoinColumn(name = "pincodes_india_pincode")
     )
     private Set<Pincode> pincodes;
 
@@ -71,61 +71,5 @@ public class Business{
         this.gstin = gstin;
         this.pincodes = pincodes;
         this.status = status;
-    }
-
-    public int getBusiness_id() {
-        return business_id;
-    }
-
-    public void setBusiness_id(int business_id) {
-        this.business_id = business_id;
-    }
-
-    public String getBusinessName() {
-        return businessName;
-    }
-
-    public void setBusinessName(String businessName) {
-        this.businessName = businessName;
-    }
-
-    public String getBusinessCategory() {
-        return businessCategory;
-    }
-
-    public void setBusinessCategory(String businessCategory) {
-        this.businessCategory = businessCategory;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getGstin() {
-        return gstin;
-    }
-
-    public void setGstin(String gstin) {
-        this.gstin = gstin;
-    }
-
-    public String getLicense() {
-        return license;
-    }
-
-    public void setLicense(String license) {
-        this.license = license;
-    }
-
-    public Set<Pincode> getPincodes() {
-        return pincodes;
-    }
-
-    public void setPincodes(Set<Pincode> pincodes) {
-        this.pincodes = pincodes;
     }
 }

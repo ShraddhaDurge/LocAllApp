@@ -1,5 +1,7 @@
 package com.localapp.controller;
 
+import com.localapp.PayloadRequest.BusinessRequest;
+import com.localapp.PayloadRequest.UpdateBusinessRequest;
 import com.localapp.PayloadResponse.BusinessRegResponse;
 import com.localapp.PayloadResponse.MessageResponse;
 import com.localapp.model.Business;
@@ -16,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 
 
@@ -31,7 +32,7 @@ public class BusinessController {
 
     //Post endpoint for vendors to register their business
     @PostMapping("/register/{userId}")
-    public ResponseEntity<?> registerBusiness(@PathVariable("userId") int userId, @RequestBody Business newBusiness) {
+    public ResponseEntity<?> registerBusiness(@PathVariable("userId") int userId, @RequestBody BusinessRequest newBusiness) {
 
         System.out.println(newBusiness);
         //check if user email already exist in database
@@ -41,13 +42,7 @@ public class BusinessController {
                     .body(new MessageResponse("Error: Business already exist by this gstin!"));
         }
 
-        Set<Pincode> pinSet = new HashSet<>(); //Convert pincode list to set
-        pinSet.addAll(newBusiness.getPincodes());
-        System.out.println(pinSet);
-
-        Business business = new Business(newBusiness.getBusinessName(), newBusiness.getBusinessCategory(), newBusiness.getAddress(), newBusiness.getGstin(), pinSet, "Pending");
-        System.out.println(business);
-        Business businessRegistered = vendorService.saveVendorBusiness(business,userId);             //save new user details in database
+        Business businessRegistered = vendorService.saveVendorBusiness(newBusiness,userId);             //save new user details in database
 
         return ResponseEntity.ok(new BusinessRegResponse("Business registered successfully!", businessRegistered,businessRegistered.getUser().getRole()));
 
@@ -76,4 +71,21 @@ public class BusinessController {
         }
     }
 
+    //Post endpoint for vendors to register their business
+    @PostMapping("/updateBusiness/{userId}")
+    public ResponseEntity<?> updateBusiness(@PathVariable("userId") int userId, @RequestBody UpdateBusinessRequest business) {
+
+        System.out.println(business);
+
+        Business businessRegistered = vendorService.updateBusiness(business,userId);             //save new user details in database
+
+        return ResponseEntity.ok(new BusinessRegResponse("Business updated successfully!", businessRegistered,businessRegistered.getUser().getRole()));
+
+    }
+
+    //Post endpoint for vendors to register their business
+    @GetMapping("/getBusiness/{userId}")
+    public Business getBusiness(@PathVariable("userId") int userId) {
+        return vendorService.getBusiness(userId);
+    }
 }

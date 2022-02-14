@@ -1,10 +1,12 @@
 package com.localapp.service;
 
+import com.localapp.PayloadRequest.BusinessRequest;
+import com.localapp.PayloadRequest.UpdateBusinessRequest;
 import com.localapp.model.Business;
 import com.localapp.model.Pincode;
 import com.localapp.model.User;
 import com.localapp.repository.BusinessRepository;
-import com.localapp.repository.UserRepository;
+import com.localapp.repository.PincodeRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,13 +25,23 @@ public class BusinessService {
     BusinessRepository businessRepository;
 
     @Autowired
+    PincodeRepository pincodeRepository;
+
+    @Autowired
     UserService userService;
 
     private static final Logger logger = LogManager.getLogger(UserService.class);
 
 
     //save business corresponding to specific vendor
-    public Business saveVendorBusiness(Business business, int userId) {
+    public Business saveVendorBusiness(BusinessRequest businessRequest, int userId) {
+        Set<Integer> pincodes = businessRequest.getPincodes();
+        Set<Pincode> businessPincodes = null;
+        for(int pin: pincodes) {
+            Pincode p = pincodeRepository.getById(pin);
+            businessPincodes.add(p);
+        }
+        Business business = new Business(businessRequest.getBusinessName(), businessRequest.getBusinessCategory(), businessRequest.getAddress(), businessRequest.getGstin(), businessPincodes, "Pending");
         business.setUser(userService.findById(userId));
         businessRepository.save(business);
         return findByGstin(business.getGstin());
@@ -40,6 +53,7 @@ public class BusinessService {
 
         businessRepository.save(business);
     }
+
 
     public Boolean businessExistsByGstin(String gstin) {
         return businessRepository.existsByGstin(gstin);
@@ -66,8 +80,30 @@ public class BusinessService {
         saveBusiness(business);
     }
     public Business getBusinessVendor(User user) {
-        // TODO Auto-generated method stub
         return businessRepository.findByUser(user);
 
     }
+    public Business getBusiness(int userId) {
+        return businessRepository.findByUser(userService.findById(userId));
+    }
+
+    public Business updateBusiness(UpdateBusinessRequest businessRequest, int userId) {
+        Business business = getBusiness(userId);
+        business.setBusinessName(businessRequest.getBusinessName());
+        business.setBusinessCategory(businessRequest.getBusinessCategory());
+        business.setAddress(businessRequest.getAddress());
+        Set<String> pincodes = businessRequest.getPincodes();
+        Set<Pincode> businessPincodes = null;
+        for(String pin: pincodes) {
+            Pincode p = pincodeRepository.getById(Integer.valueOf(pin));
+            businessPincodes.add(p);
+        }
+        System.out.println(businessPincodes);
+        business.setPincodes(businessPincodes);
+        saveBusiness(business);
+        return business;
+
+    }
+
+
 }

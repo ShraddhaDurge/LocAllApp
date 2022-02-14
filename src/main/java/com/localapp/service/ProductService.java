@@ -24,9 +24,7 @@ public class ProductService {
 
 
     public Product saveVendorProduct(Product product, int business_id) {
-        Set<ProductCategoryTags> productTags = product.getProductTags();
-
-        product.setProductTags(productTags);
+        product.setProductTags(product.getProductTags());
 
         product.setBusiness(businessService.getById(business_id));
 
@@ -36,7 +34,6 @@ public class ProductService {
 
 
     public List<Product> getBusinessProducts(int businessId) {
-        // TODO Auto-generated method stub
         return productRepository.findByBusiness(businessService.getById(businessId));
 
     }
@@ -49,6 +46,7 @@ public class ProductService {
         updateProduct.setQuantAvailable(product.getQuantAvailable());
         updateProduct.setPrice(product.getPrice());
         updateProduct.setProductDesc(product.getProductDesc());
+        updateProduct.setProductImage(product.getProductImage());
         productRepository.save(product);
 
         return product;

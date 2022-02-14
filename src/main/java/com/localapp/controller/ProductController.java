@@ -33,13 +33,7 @@ public class ProductController {
 
         System.out.println(newProduct);
 
-        Set<ProductCategoryTags> productTags = new HashSet<>(); //Convert Product Tags list to set
-        productTags.addAll(newProduct.getProductTags());
-        System.out.println(productTags);
-
-        Product product = new Product(newProduct.getProductName(), newProduct.getQuantAvailable(), newProduct.getPrice(), newProduct.getProductDesc(),newProduct.getProductTags());
-        System.out.println(product);
-        Product productRegistered = productService.saveVendorProduct(product,business_id);             //save new user details in database
+        Product productRegistered = productService.saveVendorProduct(newProduct,business_id);             //save new user details in database
 
         return ResponseEntity.ok(new ProductRegResponse("Product registered successfully!", productRegistered));
 

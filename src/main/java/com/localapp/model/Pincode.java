@@ -12,36 +12,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Data
 @Entity
-@Table(name = "pincodes")
+@Table(name = "pincodes_india")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Pincode{
 
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Id
-    @Column(name="pinid")
-    int pinid;
-
-    @Column(name = "pincode")
+    @Column(name="pincode")
     int pincode;
 
-    public int getPinid() {
-        return pinid;
-    }
+    @Column(name = "district")
+    String district;
 
-    public void setPinid(int pinid) {
-        this.pinid = pinid;
-    }
-
-    public int getPincode() {
-        return pincode;
-    }
-
-    public void setPincode(int pincode) {
-        this.pincode = pincode;
-    }
-
-    public Pincode(int pincode) {
-        this.pincode = pincode;
-    }
+    @Column(name = "statename")
+    String statename;
 }
