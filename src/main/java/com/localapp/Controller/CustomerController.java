@@ -1,8 +1,8 @@
-package com.localapp.controller;
+package com.localapp.Controller;
 
 import com.localapp.PayloadResponse.MessageResponse;
-import com.localapp.model.CustomerProfile;
-import com.localapp.service.CustomerService;
+import com.localapp.Model.CustomerProfile;
+import com.localapp.Service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

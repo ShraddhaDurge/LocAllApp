@@ -1,12 +1,12 @@
-package com.localapp.repository;
+package com.localapp.Repository;
 
 
-import com.localapp.model.Business;
+import com.localapp.Model.Business;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import org.springframework.stereotype.Repository;
 
-import com.localapp.model.Product;
+import com.localapp.Model.Product;
 
 import java.util.List;
 
@@ -14,9 +14,8 @@ import java.util.List;
 @Repository("productRepository")
 public interface ProductRepository extends JpaRepository<Product, Integer>{
     Product findById(int productId);
-    Product findByProductName(String productName);
     Boolean existsById(int productId);
     Product deleteById(int productId);
     List<Product> findByBusiness(Business business);
-
+    List<Product> findAll();
 }

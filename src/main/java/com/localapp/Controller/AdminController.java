@@ -1,4 +1,4 @@
-package com.localapp.controller;
+package com.localapp.Controller;
 
 import java.util.List;
 
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.localapp.model.Business;
-import com.localapp.service.AdminService;
+import com.localapp.Model.Business;
+import com.localapp.Service.AdminService;
 
 @RequestMapping("/admin")
 @RestController

@@ -1,14 +1,10 @@
-package com.localapp.model;
+package com.localapp.Model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Data
 @Entity

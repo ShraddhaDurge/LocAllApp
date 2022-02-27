@@ -1,15 +1,18 @@
 package com.localapp.PayloadResponse;
 
-import com.localapp.Model.Business;
+import java.util.List;
+
+import com.localapp.Model.BasketItems;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BusinessRegResponse {
-	private String message;
-	private Business business;
-	private String role;
+public class BasketResponse {
+
+    List<BasketItems> basketItems;
+    double totalCost;
+
 }

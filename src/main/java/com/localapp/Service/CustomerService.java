@@ -1,14 +1,12 @@
-package com.localapp.service;
+package com.localapp.Service;
 
-import com.localapp.model.CustomerProfile;
-import com.localapp.model.User;
-import com.localapp.repository.CustomerProfileRepository;
-import com.localapp.repository.UserRepository;
+import com.localapp.Model.CustomerProfile;
+import com.localapp.Model.User;
+import com.localapp.Repository.CustomerProfileRepository;
+import com.localapp.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Service

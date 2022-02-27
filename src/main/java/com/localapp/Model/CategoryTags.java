@@ -1,4 +1,4 @@
-package com.localapp.model;
+package com.localapp.Model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,11 +13,10 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Table(name = "product_tags")
+@Table(name = "tags")
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductCategoryTags {
-
+public class CategoryTags {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Id
     @Column(name="tag_id")

@@ -1,7 +1,4 @@
-package com.localapp.model;
-
-import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicInteger;
+package com.localapp.Model;
 
 import javax.persistence.*;
 

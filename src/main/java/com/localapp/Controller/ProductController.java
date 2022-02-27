@@ -1,10 +1,9 @@
-package com.localapp.controller;
+package com.localapp.Controller;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import com.localapp.Model.CategoryTags;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.localapp.PayloadResponse.MessageResponse;
 import com.localapp.PayloadResponse.ProductRegResponse;
-import com.localapp.model.Product;
-import com.localapp.model.ProductCategoryTags;
-import com.localapp.service.ProductService;
-import com.localapp.service.BusinessService;
+import com.localapp.Model.Product;
+import com.localapp.Service.ProductService;
+import com.localapp.Service.BusinessService;
 
 @RequestMapping("/product")
 @RestController
@@ -59,7 +57,6 @@ public class ProductController {
                     .badRequest()
                     .body(new MessageResponse("Product does not exist!"));
         }
-        System.out.println(productId+"  "+image);
 
         try {
             //add license of business in database
@@ -98,4 +95,15 @@ public class ProductController {
     public Product getProductById(@PathVariable("id") int id) {
         return productService.getById(id);
     }
+
+    @GetMapping(value = "/getProductTags")
+    public List<CategoryTags> getProductTags() {
+        return productService.getAllTags();
+    }
+
+    @GetMapping(value = "/getMostPopularProducts")
+    public List<Product> getMostPopularProducts() {
+        return productService.getMostPopularProducts();
+    }
+
 }

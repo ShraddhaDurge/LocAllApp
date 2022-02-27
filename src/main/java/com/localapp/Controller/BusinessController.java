@@ -1,12 +1,11 @@
-package com.localapp.controller;
+package com.localapp.Controller;
 
 import com.localapp.PayloadRequest.BusinessRequest;
 import com.localapp.PayloadRequest.UpdateBusinessRequest;
 import com.localapp.PayloadResponse.BusinessRegResponse;
 import com.localapp.PayloadResponse.MessageResponse;
-import com.localapp.model.Business;
-import com.localapp.model.Pincode;
-import com.localapp.service.BusinessService;
+import com.localapp.Model.Business;
+import com.localapp.Service.BusinessService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Set;
 
 
 @RequestMapping("/vendor")

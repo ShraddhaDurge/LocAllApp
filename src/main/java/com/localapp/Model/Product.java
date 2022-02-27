@@ -1,4 +1,4 @@
-package com.localapp.model;
+package com.localapp.Model;
 
 import java.util.Set;
 
@@ -50,6 +50,14 @@ public class Product {
     @Column(name = "product_desc")
     String productDesc;
 
+    @Column(name = "min_no_products")
+    int minProducts;
+
+    @Column(name = "max_discount")
+    double maxDiscount;
+
+    @Column(name = "total_sales")
+    int totalSales = 0;
 
     @ManyToMany(fetch = FetchType.EAGER,  cascade = { CascadeType.PERSIST, CascadeType.MERGE } )
     @JoinTable(name = "product_tags_relation",

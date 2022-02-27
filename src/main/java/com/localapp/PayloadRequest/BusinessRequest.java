@@ -1,7 +1,7 @@
 package com.localapp.PayloadRequest;
 
 
-import com.localapp.model.Pincode;
+import com.localapp.Model.Pincode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ public class BusinessRequest {
     String businessName;
     String businessCategory;
     String address;
-    Set<Integer> pincodes;
+    Set<Pincode> pincodes;
     String gstin;
 
 }

@@ -1,7 +1,7 @@
-package com.localapp.repository;
+package com.localapp.Repository;
 
-import com.localapp.model.Business;
-import com.localapp.model.User;
+import com.localapp.Model.Business;
+import com.localapp.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

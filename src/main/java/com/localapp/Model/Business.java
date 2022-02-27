@@ -1,4 +1,4 @@
-package com.localapp.model;
+package com.localapp.Model;
 
 import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -37,7 +37,7 @@ public class Business{
         @Column(name = "status")
         String status;
 
-
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToMany(fetch = FetchType.EAGER,  cascade = { CascadeType.PERSIST, CascadeType.MERGE } )
     @JoinTable(name = "business_deliver_pincodes",
             joinColumns = @JoinColumn(name = "business_business_id"),

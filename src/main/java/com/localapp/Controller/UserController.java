@@ -1,10 +1,11 @@
-package com.localapp.controller;
+package com.localapp.Controller;
 
 import com.localapp.PayloadResponse.BusinessRegResponse;
 import com.localapp.PayloadResponse.MessageResponse;
 import com.localapp.PayloadResponse.RegisterResponse;
-import com.localapp.service.UserService;
-import com.localapp.service.BusinessService;
+import com.localapp.Model.Business;
+import com.localapp.Service.UserService;
+import com.localapp.Service.BusinessService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
-import com.localapp.model.User;
+import com.localapp.Model.User;
 import com.localapp.PayloadRequest.LoginRequest;
 
 
@@ -63,8 +64,11 @@ public class UserController {
 			if(checkuser!=null)
 			{
 				logger.info("SUCCESS");
-				if(checkuser.getRole().equals("vendor"))
-					return ResponseEntity.ok(new BusinessRegResponse("Vendor Login successfully!",vendorService.getBusinessVendor(checkuser),checkuser.getRole()));
+				if(checkuser.getRole().equals("vendor")) {
+					Business b = vendorService.getBusinessVendor(checkuser);
+					System.out.println(b);
+					return ResponseEntity.ok(new BusinessRegResponse("Vendor Login successfully!", b, checkuser.getRole()));
+				}
 				else
 					return ResponseEntity.ok(new RegisterResponse("User login successfully!",checkuser,checkuser.getRole()));
 			}

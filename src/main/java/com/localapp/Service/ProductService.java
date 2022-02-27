@@ -1,17 +1,21 @@
-package com.localapp.service;
+package com.localapp.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.localapp.model.Business;
+import com.localapp.Repository.CategoryTagsRepository;
+import com.localapp.Model.CategoryTags;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 
-import com.localapp.model.Product;
-import com.localapp.model.ProductCategoryTags;
-import com.localapp.repository.ProductRepository;
+import com.localapp.Model.Product;
+import com.localapp.Model.ProductCategoryTags;
+import com.localapp.Repository.ProductRepository;
 
 @Service
 public class ProductService {
@@ -22,6 +26,8 @@ public class ProductService {
     @Autowired
     ProductRepository productRepository;
 
+    @Autowired
+    CategoryTagsRepository categoryTagsRepository;
 
     public Product saveVendorProduct(Product product, int business_id) {
         product.setProductTags(product.getProductTags());
@@ -46,10 +52,16 @@ public class ProductService {
         updateProduct.setQuantAvailable(product.getQuantAvailable());
         updateProduct.setPrice(product.getPrice());
         updateProduct.setProductDesc(product.getProductDesc());
-        updateProduct.setProductImage(product.getProductImage());
-        productRepository.save(product);
 
-        return product;
+        if(product.getBusiness() != null)
+            updateProduct.setBusiness(product.getBusiness());
+
+        if(product.getProductImage() != null)
+            updateProduct.setProductImage(product.getProductImage());
+
+        productRepository.save(updateProduct);
+
+        return updateProduct;
 
     }
     public void saveProduct(Product product) {
@@ -77,5 +89,30 @@ public class ProductService {
         saveProduct(product);
     }
 
+    public List<CategoryTags> getAllTags() {
+        return categoryTagsRepository.findAll();
+    }
 
+    public List<Product> getMostPopularProducts()
+    {
+        List<Product> products = productRepository.findAll();
+        List<Product> popularProducts = products.stream()
+                .sorted(Comparator.comparing(Product::getTotalSales).reversed())
+                .collect(Collectors.toList());
+
+        List<Product> mostPopularProducts=new ArrayList<>();
+
+        if(popularProducts!=null && popularProducts.size()>10)
+        {
+            for(int i=0;i<10;i++)
+            {
+                mostPopularProducts.add(popularProducts.get(i));
+            }
+        }
+        else
+        {
+            mostPopularProducts = popularProducts;
+        }
+        return mostPopularProducts;
+    }
 }

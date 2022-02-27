@@ -1,15 +1,14 @@
-package com.localapp.service;
+package com.localapp.Service;
 
 import java.util.Base64;
 
-import com.localapp.model.Business;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.localapp.model.User;
+import com.localapp.Model.User;
 import com.localapp.PayloadRequest.LoginRequest;
-import com.localapp.repository.UserRepository;
+import com.localapp.Repository.UserRepository;
 
 @Service
 public class UserService{
@@ -45,14 +44,13 @@ public class UserService{
 	//check if valid user is trying to login
 	public User checkUser(LoginRequest userObject) {
 		String reversedPassword = new StringBuffer(decodeString(userObject.getPassword())).reverse().toString();
-		System.out.println(reversedPassword);
 
 		User user = userRepository.findByEmail(userObject.getEmail());
 
-		System.out.println(user +"Service checkuser");
+		System.out.println(user +" Service checkuser");
 
 		String decodedPassword = new StringBuffer(decodeString(user.getPassword())).reverse().toString();
-		System.out.println(decodedPassword);
+
 		String loginPassword = reversedPassword.replaceAll("\\s","");
 
 		if(decodedPassword.equals(loginPassword)) {

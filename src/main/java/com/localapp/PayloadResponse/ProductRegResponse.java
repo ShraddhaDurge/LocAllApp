@@ -1,6 +1,6 @@
 package com.localapp.PayloadResponse;
 
-import com.localapp.model.Product;
+import com.localapp.Model.Product;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

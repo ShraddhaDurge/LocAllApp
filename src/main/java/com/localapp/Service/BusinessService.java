@@ -1,12 +1,12 @@
-package com.localapp.service;
+package com.localapp.Service;
 
 import com.localapp.PayloadRequest.BusinessRequest;
 import com.localapp.PayloadRequest.UpdateBusinessRequest;
-import com.localapp.model.Business;
-import com.localapp.model.Pincode;
-import com.localapp.model.User;
-import com.localapp.repository.BusinessRepository;
-import com.localapp.repository.PincodeRepository;
+import com.localapp.Model.Business;
+import com.localapp.Model.Pincode;
+import com.localapp.Model.User;
+import com.localapp.Repository.BusinessRepository;
+import com.localapp.Repository.PincodeRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,6 @@ import org.springframework.util.Base64Utils;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -35,16 +34,16 @@ public class BusinessService {
 
     //save business corresponding to specific vendor
     public Business saveVendorBusiness(BusinessRequest businessRequest, int userId) {
-        Set<Integer> pincodes = businessRequest.getPincodes();
-        Set<Pincode> businessPincodes = null;
-        for(int pin: pincodes) {
-            Pincode p = pincodeRepository.getById(pin);
+        Set<Pincode> pincodes = businessRequest.getPincodes();
+        Set<Pincode> businessPincodes = new HashSet<>();
+        for(Pincode pin: pincodes) {
+            Pincode p = pincodeRepository.getById(pin.getPincode());
             businessPincodes.add(p);
         }
         Business business = new Business(businessRequest.getBusinessName(), businessRequest.getBusinessCategory(), businessRequest.getAddress(), businessRequest.getGstin(), businessPincodes, "Pending");
         business.setUser(userService.findById(userId));
         businessRepository.save(business);
-        return findByGstin(business.getGstin());
+        return businessRepository.findById(business.getBusiness_id());
 
     }
 
@@ -92,10 +91,10 @@ public class BusinessService {
         business.setBusinessName(businessRequest.getBusinessName());
         business.setBusinessCategory(businessRequest.getBusinessCategory());
         business.setAddress(businessRequest.getAddress());
-        Set<String> pincodes = businessRequest.getPincodes();
-        Set<Pincode> businessPincodes = null;
-        for(String pin: pincodes) {
-            Pincode p = pincodeRepository.getById(Integer.valueOf(pin));
+        Set<Pincode> pincodes = businessRequest.getPincodes();
+        Set<Pincode> businessPincodes = new HashSet<>();
+        for(Pincode pin: pincodes) {
+            Pincode p = pincodeRepository.getById(pin.getPincode());
             businessPincodes.add(p);
         }
         System.out.println(businessPincodes);
