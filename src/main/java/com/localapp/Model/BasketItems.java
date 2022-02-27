@@ -48,4 +48,13 @@ public class BasketItems {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private User user;
+
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "basket_product",
+            joinColumns = @JoinColumn(name = "BasketItems_basket_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_product_id")
+    )
+    private Product product;
 }
