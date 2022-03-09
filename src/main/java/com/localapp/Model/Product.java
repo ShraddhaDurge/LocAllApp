@@ -75,30 +75,4 @@ public class Product {
     )
     private Business business;
 
-    public Product(String productName, int quantAvailable, double price, String productDesc,
-                   Set<ProductCategoryTags> productTags) {
-        super();
-        this.productName = productName;
-        this.quantAvailable = quantAvailable;
-        this.price = price;
-        this.productDesc = productDesc;
-        this.productTags = productTags;
-
-
-    }
-
-    public Product(String productName, int quantAvailable, double price, String productImage, String productDesc,
-                   Set<ProductCategoryTags> productTags) {
-        super();
-        this.productName = productName;
-        this.quantAvailable = quantAvailable;
-        this.price = price;
-        this.productImage = productImage;
-        this.productDesc = productDesc;
-        this.productTags = productTags;
-    }
-
-
-
-
 }

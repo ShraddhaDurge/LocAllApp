@@ -83,7 +83,6 @@ public class ProductService {
 
     public void uploadProductImage(int productId, byte[] imageBytes) throws IOException {
         Product product = getById(productId);
-        System.out.println(product + "  "+imageBytes);
         String encodedImage = Base64Utils.encodeToString(imageBytes);
         product.setProductImage(encodedImage);
         saveProduct(product);

@@ -34,8 +34,8 @@ public class BasketItemsService {
             int totalNumOfItems = 0;
             for(int i=0; i<basketItems.size();i++)
             {
-                int productId = basketItems.get(i).getProductId();
-                Product product = getproduct(productId);
+                int productId = basketItems.get(i).getProduct().getProductId();
+                Product product = productService.getById(productId);
                 if(product!=null)
                 {
                     int vendor = product.getBusiness().getBusiness_id();
@@ -67,8 +67,8 @@ public class BasketItemsService {
             {
                 for(int i = 0; i<basketItems.size(); i++)
                 {
-                    int productId = basketItems.get(i).getProductId();
-                    Product product = getproduct(productId);
+                    int productId = basketItems.get(i).getProduct().getProductId();
+                    Product product = productService.getById(productId);
                     if(product == null) {
                         logger.error("Personalised discount could not be calculated for Customer with ID: {} since Product was not found!",custId);
                         return -1;
@@ -142,7 +142,7 @@ public class BasketItemsService {
     public boolean saveBasketItemToRepo(int custId, OrderRequest order) {
         try {
             //check for custId if product Id exists in basket Items and status = unpaid, then increase qty
-            Product product = getproduct(order.getProductId());
+            Product product = productService.getById(order.getProductId());
             if(product == null) {
                 logger.error("New Basket Item for Customer with CustId: {} and Product with ProductId: {} could not be saved since Product was not found!", custId, order.getProductId());
                 return false;
@@ -153,40 +153,36 @@ public class BasketItemsService {
                 return false;
             }
             List<BasketItems> tempBasket = basketItemsRepository.findByUser(userRepository.findById(custId));
-
-            for(int i=0;i<tempBasket.size();i++)
-            {
-                if(tempBasket.get(i).getProductId() == order.getProductId() && tempBasket.get(i).getStatus().equalsIgnoreCase("unpaid"))
-                {
-                    int prevQuantity = tempBasket.get(i).getQuantSelected();
-                    increaseTotalSalesOnInsertion(order);
-                    tempBasket.get(i).setQuantSelected( prevQuantity + order.getQuantSelected());
-                    tempBasket.get(i).setPrice(product.getPrice() * (prevQuantity + order.getQuantSelected()));
-                    tempBasket.get(i).setDiscountedPrice(product.getPrice() * (prevQuantity + order.getQuantSelected()));
-                    BasketItems savedBasketItem = saveBasketItem(tempBasket.get(i));
-                    if(savedBasketItem.getProductName()!=null)
-                    {
-                        logger.info("New Basket Item for Customer with CustId: {} and Product with ProductId: {} saved!", custId, order.getProductId());
-                        return true;
+            if(tempBasket.size()!=0) {
+                for (int i = 0; i < tempBasket.size(); i++) {
+                    if (tempBasket.get(i).getProduct().getProductId() == order.getProductId() && tempBasket.get(i).getStatus().equalsIgnoreCase("unpaid")) {
+                        int prevQuantity = tempBasket.get(i).getQuantSelected();
+                        increaseTotalSalesOnInsertion(order);
+                        tempBasket.get(i).setQuantSelected(prevQuantity + order.getQuantSelected());
+                        tempBasket.get(i).setPriceOfItem(product.getPrice() * (prevQuantity + order.getQuantSelected()));
+                        tempBasket.get(i).setDiscountedPrice(product.getPrice() * (prevQuantity + order.getQuantSelected()));
+                        BasketItems savedBasketItem = saveBasketItem(tempBasket.get(i));
+                        if (savedBasketItem.getProduct().getProductName() != null) {
+                            logger.info("New Basket Item for Customer with CustId: {} and Product with ProductId: {} saved!", custId, order.getProductId());
+                            return true;
+                        }
+                        return false;
                     }
-                    return false;
                 }
             }
 
             increaseTotalSalesOnInsertion(order);
             BasketItems basketItem = new BasketItems();
             basketItem.setUser(userRepository.findById(custId));
-            basketItem.setPrice(product.getPrice() * order.getQuantSelected());
-            basketItem.setProductName(product.getProductName());
-            basketItem.setProductImage(product.getProductImage());
+            basketItem.setPriceOfItem(product.getPrice() * order.getQuantSelected());
             basketItem.setDiscountedPrice(product.getPrice() * order.getQuantSelected());
-            basketItem.setProductId(order.getProductId());
+            basketItem.setProduct(product);
             basketItem.setQuantSelected(order.getQuantSelected());
             basketItem.setStatus("unpaid");
 
             BasketItems savedBasketItem = saveBasketItem(basketItem);
 
-            if(savedBasketItem.getProductName()!=null)
+            if(savedBasketItem.getProduct().getProductName()!=null)
             {
                 logger.info("New Basket Item for Customer with CustId: {} and Product with ProductId: {} saved!", custId, order.getProductId());
                 return true;
@@ -200,30 +196,17 @@ public class BasketItemsService {
         }
     }
 
-    public Product getproduct(int productId) {
-        Product product = null;
-        try {
-            product = productService.getById(productId);
-            logger.info(" Product with Product ID: {} found!",productId);
-            return product;
-        }
-        catch(Exception e)
-        {
-            logger.error("Product with Product ID: {} could not be found! ",productId);
-            return null;
-        }
-    }
-
     public BasketItems deleteBasketItem(int basketId) {
         try {
             BasketItems basketItem = getBasketById(basketId);
             if(basketItem!=null)
             {
                 int quantity = basketItem.getQuantSelected();
-                int productId = basketItem.getProductId();
+                int productId = basketItem.getProduct().getProductId();
                 OrderRequest order = new OrderRequest();
                 order.setProductId(productId);
                 order.setQuantSelected(quantity);
+                basketItem.setPriceOfItem(quantity * basketItem.getProduct().getPrice());
                 reduceTotalSalesOnDeletion(order);
             }
             logger.info("Deleting Basket Item with Basket Id: {}", basketId);
@@ -237,7 +220,7 @@ public class BasketItemsService {
 
     public void reduceTotalSalesOnDeletion(OrderRequest order) {
         try {
-            Product product = getproduct(order.getProductId());
+            Product product = productService.getById(order.getProductId());
             if(product != null) {
                 int totalSales = product.getTotalSales();
                 totalSales = totalSales - order.getQuantSelected();
@@ -255,7 +238,7 @@ public class BasketItemsService {
 
     public void increaseTotalSalesOnInsertion(OrderRequest order) {
         try {
-            Product product = getproduct(order.getProductId());
+            Product product = productService.getById(order.getProductId());
             if(product != null) {
                 int totalSales = product.getTotalSales();
                 totalSales += order.getQuantSelected();

@@ -37,6 +37,7 @@ public class BasketItemsController {
     @PostMapping("/addToBasket/{custId}")
     public ResponseEntity<MessageResponse> addToBasket(@PathVariable (value = "custId") int custId , @RequestBody OrderRequest order) {
         try {
+            logger.info("Order Received: {}",order);
             boolean saved = basketItemsService.saveBasketItemToRepo(custId, order);
             if(saved) {
                 logger.info("Adding to Basket of CustId: {}",custId);
@@ -44,11 +45,15 @@ public class BasketItemsController {
             }
             else
                 logger.error("Product could not be added!");
-            return ResponseEntity.ok(new MessageResponse("Product could not be added!"));
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Product could not be added!"));
         }
         catch (Exception e) {
             logger.error("Error Occured while adding product!");
-            return ResponseEntity.ok(new MessageResponse("Error Occured while adding product!"));
+            return ResponseEntity
+                     .badRequest()
+                    .body(new MessageResponse("Error Occured while adding product!"));
         }
     }
 
@@ -59,12 +64,16 @@ public class BasketItemsController {
             double cost = basketItemsService.calculateDiscountedPrice(custId);
             List<BasketItems> basketItems = basketItemsService.getFilteredBasketItems(custId);
             if(cost<=0 && basketItems==null)
-                return ResponseEntity.ok(new MessageResponse("Basket Items for Customer with CustId: "+custId+" not found!"));
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Basket Items for Customer with CustId: "+custId+" not found!"));
             return ResponseEntity.ok(new BasketResponse(basketItems, cost));
         }
         catch (Exception e) {
             logger.error("Error Occured while obtaining Basket Items of Customer with CustId: {}",custId);
-            return ResponseEntity.ok(new MessageResponse("Error Occured while obtaining Basket Items of Customer with CustId: "+custId+"!"));
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error Occured while obtaining Basket Items of Customer with CustId: "+custId+"!"));
         }
     }
 
@@ -79,11 +88,15 @@ public class BasketItemsController {
             }
             else
                 logger.error("Basket Item could not be Found!");
-            return ResponseEntity.ok(new MessageResponse("Basket Item could not be found!"));
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Basket Item could not be found!"));
         }
         catch (Exception e) {
             logger.error("Error Occured while finding Basket Item Details with Id: {}!",basketId);
-            return ResponseEntity.ok(new MessageResponse("Error Occured while finding Basket Item Details with Id: "+basketId+"!"));
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error Occured while finding Basket Item Details with Id: "+basketId+"!"));
         }
     }
 

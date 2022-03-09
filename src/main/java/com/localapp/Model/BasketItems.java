@@ -19,23 +19,14 @@ public class BasketItems {
     @Column(name = "basket_id")
     int basketId;
 
-    @Column(name = "product_name")
-    String productName;
-
-    @Column(name = "product_image")
-    String productImage;
-
     @Column(name = "quantity_selected")
     int quantSelected;
 
-    @Column(name = "price")
-    double price;
+    @Column(name = "priceOfItem")
+    double priceOfItem;
 
     @Column(name = "discount_price")
     double discountedPrice;
-
-    @Column(name = "product_id")
-    int productId;
 
     @Column(name = "status")
     String status;
@@ -50,7 +41,7 @@ public class BasketItems {
     private User user;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinTable(
             name = "basket_product",
             joinColumns = @JoinColumn(name = "BasketItems_basket_id"),

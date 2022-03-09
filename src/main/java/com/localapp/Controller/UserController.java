@@ -75,12 +75,14 @@ public class UserController {
 			else
 				return ResponseEntity
 						.badRequest()
-					.body(new MessageResponse("Error: User does not exists!"));
+					.body(new MessageResponse("Error: Password does not match!"));
 		}
 		catch(Exception e)
 		{
 			logger.error("FAILURE");
-			return null;
+			return ResponseEntity
+					.badRequest()
+					.body(new MessageResponse("Error: User does not exists!"));
 		}
 
 	}
