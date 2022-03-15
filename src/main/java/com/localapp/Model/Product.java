@@ -66,13 +66,4 @@ public class Product {
     )
     private Set<ProductCategoryTags> productTags;
 
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "vendor_product",
-            joinColumns = @JoinColumn(name = "product_product_id"),
-            inverseJoinColumns = @JoinColumn(name = "business_business_id")
-    )
-    private Business business;
-
 }

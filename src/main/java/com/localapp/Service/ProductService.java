@@ -1,20 +1,15 @@
 package com.localapp.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.localapp.Model.*;
 import com.localapp.Repository.CategoryTagsRepository;
-import com.localapp.Model.CategoryTags;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 
-import com.localapp.Model.Product;
-import com.localapp.Model.ProductCategoryTags;
 import com.localapp.Repository.ProductRepository;
 
 @Service
@@ -30,17 +25,20 @@ public class ProductService {
     CategoryTagsRepository categoryTagsRepository;
 
     public Product saveVendorProduct(Product product, int business_id) {
-        product.setProductTags(product.getProductTags());
+//        product.setProductTags(product.getProductTags());
 
-        product.setBusiness(businessService.getById(business_id));
-
+        Business b = businessService.getById(business_id);
+        Set<Product> products = b.getProducts();
+        products.add(product);
         productRepository.save(product);
+        businessService.saveBusiness(b);
+
         return product;
     }
 
 
-    public List<Product> getBusinessProducts(int businessId) {
-        return productRepository.findByBusiness(businessService.getById(businessId));
+    public Set<Product> getBusinessProducts(int businessId) {
+        return businessService.getById(businessId).getProducts();
 
     }
 
@@ -52,9 +50,6 @@ public class ProductService {
         updateProduct.setQuantAvailable(product.getQuantAvailable());
         updateProduct.setPrice(product.getPrice());
         updateProduct.setProductDesc(product.getProductDesc());
-
-        if(product.getBusiness() != null)
-            updateProduct.setBusiness(product.getBusiness());
 
         if(product.getProductImage() != null)
             updateProduct.setProductImage(product.getProductImage());

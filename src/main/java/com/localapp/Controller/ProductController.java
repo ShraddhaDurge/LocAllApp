@@ -2,6 +2,7 @@ package com.localapp.Controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import com.localapp.Model.CategoryTags;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +72,6 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/delete/{productId}", method = RequestMethod.DELETE)
-    @ResponseBody
     public ResponseEntity<MessageResponse> delete(@PathVariable(value = "productId") int productId) throws IOException {
         try {
             productService.deleteById(productId);
@@ -86,7 +86,7 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/getList/{businessId}", method = RequestMethod.GET)
-    public List<Product> getBusinessProducts(@PathVariable(value = "businessId") int businessId) {
+    public Set<Product> getBusinessProducts(@PathVariable(value = "businessId") int businessId) {
         return productService.getBusinessProducts(businessId);
     }
 

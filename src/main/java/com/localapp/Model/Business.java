@@ -54,6 +54,15 @@ public class Business{
     )
     private User user;
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "vendor_product",
+            inverseJoinColumns = @JoinColumn(name = "product_product_id"),
+            joinColumns = @JoinColumn(name = "business_business_id")
+    )
+    private Set<Product> products;
+
     public Business(String businessName, String businessCategory, String address, String gstin, String license, Set<Pincode> pincodes) {
         this.businessName = businessName;
         this.businessCategory = businessCategory;

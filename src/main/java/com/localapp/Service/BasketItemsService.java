@@ -2,7 +2,10 @@ package com.localapp.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import com.localapp.Model.Business;
+import com.localapp.Model.User;
 import com.localapp.Repository.UserRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +29,9 @@ public class BasketItemsService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    BusinessService businessService;
+
     private static final Logger logger = LogManager.getLogger(BasketItemsService.class);
 
     public int numberOfItemsFromVendor(int businessId, List<BasketItems> basketItems) {
@@ -38,9 +44,16 @@ public class BasketItemsService {
                 Product product = productService.getById(productId);
                 if(product!=null)
                 {
-                    int vendor = product.getBusiness().getBusiness_id();
+                    Business vendor = businessService.getById(businessId);
+                    Set<Product> vendorProducts = vendor.getProducts();
+//                    int vendor = product.getBusiness().getBusiness_id();
+//
+//                    if(vendor == businessId)
+//                    {
+//                        totalNumOfItems += basketItems.get(i).getQuantSelected();
+//                    }
 
-                    if(vendor == businessId)
+                    if(vendorProducts.contains(product))
                     {
                         totalNumOfItems += basketItems.get(i).getQuantSelected();
                     }
@@ -55,6 +68,7 @@ public class BasketItemsService {
             return -1;
         }
     }
+
 
     public double calculateDiscountedPrice(int custId) {
         // 1: Get All Product Id from BasketItems where status = unpaid & cust_id = custId
@@ -74,9 +88,10 @@ public class BasketItemsService {
                         return -1;
                     }
 
-                    int vendor = product.getBusiness().getBusiness_id();
+//                    int vendor = product.getBusiness().getBusiness_id();
+                    Business vendor = businessService.getProductBusiness(product);
                     int minQuantity = product.getMinProducts();
-                    int currentQuantity = numberOfItemsFromVendor(vendor, basketItems);
+                    int currentQuantity = numberOfItemsFromVendor(vendor.getBusiness_id(), basketItems);
                     double discount = 0;
                     if(currentQuantity >= minQuantity)
                     {
@@ -87,12 +102,14 @@ public class BasketItemsService {
                     }
                     int quantity = basketItems.get(i).getQuantSelected();
                     double discountedPricePerProduct = product.getPrice() * (1-(discount/100)) * quantity;
+                    discountedPricePerProduct = Math.round(discountedPricePerProduct * 100.0) / 100.0;
                     basketItems.get(i).setDiscountedPrice(discountedPricePerProduct);
                     saveBasketItem(basketItems.get(i));
                     totalDiscountedPrice += discountedPricePerProduct;
                 }
             }
             logger.info("Personalised discount for Customer with ID: {} is {}!",custId,totalDiscountedPrice);
+
             return totalDiscountedPrice;
         }
         catch(Exception e)
@@ -152,7 +169,10 @@ public class BasketItemsService {
                 logger.error("Required Stock Not Available");
                 return false;
             }
+
             List<BasketItems> tempBasket = basketItemsRepository.findByUser(userRepository.findById(custId));
+
+            System.out.println(tempBasket);
             if(tempBasket.size()!=0) {
                 for (int i = 0; i < tempBasket.size(); i++) {
                     if (tempBasket.get(i).getProduct().getProductId() == order.getProductId() && tempBasket.get(i).getStatus().equalsIgnoreCase("unpaid")) {
@@ -192,6 +212,7 @@ public class BasketItemsService {
         catch(Exception e)
         {
             logger.error("New Basket Item for Customer with CustId: {} and Product with ProductId: {} could not be saved!", custId, order.getProductId());
+            logger.error(e);
             return false;
         }
     }

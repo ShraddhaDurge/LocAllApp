@@ -16,6 +16,5 @@ public interface ProductRepository extends JpaRepository<Product, Integer>{
     Product findById(int productId);
     Boolean existsById(int productId);
     Product deleteById(int productId);
-    List<Product> findByBusiness(Business business);
     List<Product> findAll();
 }

@@ -1,5 +1,6 @@
 package com.localapp.Service;
 
+import com.localapp.Model.Product;
 import com.localapp.PayloadRequest.BusinessRequest;
 import com.localapp.PayloadRequest.UpdateBusinessRequest;
 import com.localapp.Model.Business;
@@ -15,6 +16,7 @@ import org.springframework.util.Base64Utils;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -104,5 +106,14 @@ public class BusinessService {
 
     }
 
+    public Business getProductBusiness(Product product) {
 
+        List<Business> vendors = businessRepository.findAll();
+        for(Business b : vendors) {
+            Set<Product> vendorProducts = b.getProducts();
+            if(vendorProducts.contains(product))
+                return b;
+        }
+        return null;
+    }
 }
