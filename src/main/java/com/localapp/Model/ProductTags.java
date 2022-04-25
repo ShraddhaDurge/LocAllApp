@@ -13,10 +13,11 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Table(name = "tags")
+@Table(name = "product_tags")
 @AllArgsConstructor
 @NoArgsConstructor
-public class CategoryTags {
+public class ProductTags {
+
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Id
     @Column(name="tag_id")

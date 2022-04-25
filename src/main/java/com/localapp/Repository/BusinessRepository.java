@@ -13,7 +13,6 @@ public interface BusinessRepository extends JpaRepository<Business, Integer> {
     Boolean existsById(int bid);
     Boolean existsByGstin(String gstin);
     Business findById(int bid);
-    Business findByGstin(String gstin);
     List<Business> findByStatus(String status);
     Business findByUser(User user);
 }

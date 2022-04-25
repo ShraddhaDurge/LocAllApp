@@ -17,6 +17,8 @@ import com.localapp.Repository.BasketItemsRepository;
 import com.localapp.Model.BasketItems;
 import com.localapp.Model.Product;
 
+import javax.mail.MessagingException;
+
 @Service
 public class BasketItemsService {
 
@@ -32,6 +34,9 @@ public class BasketItemsService {
     @Autowired
     BusinessService businessService;
 
+    @Autowired
+    SendEmailService sendEmailService;
+
     private static final Logger logger = LogManager.getLogger(BasketItemsService.class);
 
     public int numberOfItemsFromVendor(int businessId, List<BasketItems> basketItems) {
@@ -46,12 +51,6 @@ public class BasketItemsService {
                 {
                     Business vendor = businessService.getById(businessId);
                     Set<Product> vendorProducts = vendor.getProducts();
-//                    int vendor = product.getBusiness().getBusiness_id();
-//
-//                    if(vendor == businessId)
-//                    {
-//                        totalNumOfItems += basketItems.get(i).getQuantSelected();
-//                    }
 
                     if(vendorProducts.contains(product))
                     {
@@ -87,8 +86,6 @@ public class BasketItemsService {
                         logger.error("Personalised discount could not be calculated for Customer with ID: {} since Product was not found!",custId);
                         return -1;
                     }
-
-//                    int vendor = product.getBusiness().getBusiness_id();
                     Business vendor = businessService.getProductBusiness(product);
                     int minQuantity = product.getMinProducts();
                     int currentQuantity = numberOfItemsFromVendor(vendor.getBusiness_id(), basketItems);
@@ -284,5 +281,4 @@ public class BasketItemsService {
             return null;
         }
     }
-
 }

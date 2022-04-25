@@ -12,10 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -64,6 +61,7 @@ public class Product {
             joinColumns = @JoinColumn(name = "product_product_id"),
             inverseJoinColumns = @JoinColumn(name = "tags_tag_id")
     )
-    private Set<ProductCategoryTags> productTags;
+    private Set<ProductTags> productTags;
+
 
 }

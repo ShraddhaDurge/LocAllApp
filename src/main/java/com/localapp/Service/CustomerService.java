@@ -23,17 +23,21 @@ public class CustomerService {
         User user = userRepository.findById(userId);
         CustomerProfile cp = findCustomerProfileByUser(user);
 
-        if(cp == null)
+        if(cp == null) {
             customerProfile.setUser(user);
+            profileRepository.save(customerProfile);
+            return customerProfile;
+        }
         else {
             cp.setBillingAddress(customerProfile.getBillingAddress());
             cp.setShippingAddress(customerProfile.getShippingAddress());
             cp.setShippingPincode(customerProfile.getShippingPincode());
             cp.setBillingPincode(customerProfile.getBillingPincode());
+            profileRepository.save(cp);
+            return cp;
         }
 
-        profileRepository.save(cp);
-        return cp;
+
     }
 
     public CustomerProfile getCustomerProfile(int userId) {

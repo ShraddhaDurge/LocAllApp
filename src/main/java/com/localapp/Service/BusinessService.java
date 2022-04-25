@@ -68,8 +68,8 @@ public class BusinessService {
         return businessRepository.getById(id);
     }
 
-    public Business findByGstin(String gstin) {
-        return businessRepository.findByGstin(gstin);
+    public List<Business> findAllBusinesses() {
+        return businessRepository.findAll();
     }
 
     //save business license in database

@@ -117,7 +117,19 @@ public class BasketItemsController {
         }
     }
 
-
+    @GetMapping(value = "/sendInvoice/{custId}")
+    public ResponseEntity<?> sendInvoice(@PathVariable (value = "custId") int custId) {
+        try {
+            logger.info("Sending invoice to Customer with custId: {}",custId);
+            return ResponseEntity.ok(new MessageResponse("Payment done successfully!"));
+        }
+        catch (Exception e) {
+            logger.error("Error Occured while sending invoice to Customer with CustId: {}",custId);
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error Occured while sending invoice to Customer with CustId: "+custId+"!"));
+        }
+    }
 
 
 }

@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import com.localapp.Model.CategoryTags;
+import com.localapp.Model.ProductTags;
+import com.localapp.PayloadResponse.ProductCategoryResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -97,13 +98,23 @@ public class ProductController {
     }
 
     @GetMapping(value = "/getProductTags")
-    public List<CategoryTags> getProductTags() {
+    public List<ProductTags> getProductTags() {
         return productService.getAllTags();
+    }
+
+    @GetMapping(value = "/getProductCategories")
+    public List<ProductCategoryResponse> getProductCategories() {
+        return productService.getProductCategories();
     }
 
     @GetMapping(value = "/getMostPopularProducts")
     public List<Product> getMostPopularProducts() {
         return productService.getMostPopularProducts();
+    }
+
+    @GetMapping(value = "/getCategoryProducts/{category:[a-zA-Z &+-]*}")
+    public List<Product> getCategoryProducts(@PathVariable("category")  String category) {
+        return productService.getCategoryWiseProducts(category);
     }
 
 }

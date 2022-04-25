@@ -5,7 +5,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.localapp.Model.*;
-import com.localapp.Repository.CategoryTagsRepository;
+import com.localapp.PayloadResponse.ProductCategoryResponse;
+import com.localapp.Repository.ProductTagsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
@@ -22,7 +23,7 @@ public class ProductService {
     ProductRepository productRepository;
 
     @Autowired
-    CategoryTagsRepository categoryTagsRepository;
+    ProductTagsRepository categoryTagsRepository;
 
     public Product saveVendorProduct(Product product, int business_id) {
 //        product.setProductTags(product.getProductTags());
@@ -44,7 +45,7 @@ public class ProductService {
 
     public Product updateVendorProduct(Product product) {
         Product updateProduct = productRepository.findById(product.getProductId());
-        Set<ProductCategoryTags> productTags = product.getProductTags();
+        Set<ProductTags> productTags = product.getProductTags();
         updateProduct.setProductName(product.getProductName());
         updateProduct.setProductTags(productTags);
         updateProduct.setQuantAvailable(product.getQuantAvailable());
@@ -83,8 +84,46 @@ public class ProductService {
         saveProduct(product);
     }
 
-    public List<CategoryTags> getAllTags() {
+    public List<ProductTags> getAllTags() {
         return categoryTagsRepository.findAll();
+    }
+
+    public List<ProductCategoryResponse> getProductCategories() {
+        List<Business> businesses = businessService.findAllBusinesses();
+        List<ProductCategoryResponse> productCategories = new ArrayList<>();
+
+        for(Business b : businesses) {
+            String category= b.getBusinessCategory();
+            category = category.replaceAll("Store", "");
+            category = category.replaceAll("Shop", "");
+            category = category.trim();
+            if(!b.getProducts().isEmpty()) {
+                Optional<Product> p = b.getProducts().stream().findFirst();
+                ProductCategoryResponse pc = new ProductCategoryResponse(category, p.get().getProductImage());
+                productCategories.add(pc);
+            }
+        }
+        return productCategories;
+    }
+
+    public List<Product> getCategoryWiseProducts(String getcategory) {
+        List<Business> businesses = businessService.findAllBusinesses();
+        List<Product> categoryProducts = new ArrayList<>();
+
+        for(Business b : businesses) {
+            String category= b.getBusinessCategory();
+            category = category.replaceAll("Store", "");
+            category = category.replaceAll("Shop", "");
+            category = category.trim();
+            if(category.equalsIgnoreCase(getcategory)) {
+                if (!b.getProducts().isEmpty()) {
+                    for (Product p : b.getProducts()) {
+                        categoryProducts.add(p);
+                    }
+                }
+            }
+        }
+        return categoryProducts;
     }
 
     public List<Product> getMostPopularProducts()
