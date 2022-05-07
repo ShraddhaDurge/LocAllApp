@@ -1,12 +1,17 @@
 package com.localapp.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.localapp.Model.Business;
-import com.localapp.Model.User;
+import com.localapp.Model.*;
+import com.localapp.Repository.CustomerProfileRepository;
 import com.localapp.Repository.UserRepository;
+import com.lowagie.text.DocumentException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +19,6 @@ import org.springframework.stereotype.Service;
 
 import com.localapp.PayloadRequest.OrderRequest;
 import com.localapp.Repository.BasketItemsRepository;
-import com.localapp.Model.BasketItems;
-import com.localapp.Model.Product;
 
 import javax.mail.MessagingException;
 
@@ -37,9 +40,12 @@ public class BasketItemsService {
     @Autowired
     SendEmailService sendEmailService;
 
+    @Autowired
+    CustomerProfileRepository customerProfileRepository;
+
     private static final Logger logger = LogManager.getLogger(BasketItemsService.class);
 
-    public int numberOfItemsFromVendor(int businessId, List<BasketItems> basketItems) {
+    public int numberOfItemsFromVendor(int businessId, List<BasketItem> basketItems) {
         try
         {
             int totalNumOfItems = 0;
@@ -70,10 +76,10 @@ public class BasketItemsService {
 
 
     public double calculateDiscountedPrice(int custId) {
-        // 1: Get All Product Id from BasketItems where status = unpaid & cust_id = custId
+        // 1: Get All Product Id from BasketItem where status = unpaid & cust_id = custId
         try
         {
-            List<BasketItems> basketItems = getFilteredBasketItems(custId);
+            List<BasketItem> basketItems = getFilteredBasketItems(custId);
             //2: For every product compare quantity of product selected with min_products and calculate discount
             double totalDiscountedPrice = 0;
             if(basketItems!=null)
@@ -117,7 +123,7 @@ public class BasketItemsService {
         }
     }
 
-    public BasketItems saveBasketItem(BasketItems basketItem) {
+    public BasketItem saveBasketItem(BasketItem basketItem) {
         try {
             logger.info("Saving new Basket Item with Basket Id: {}", basketItem.getBasketId());
             return basketItemsRepository.save(basketItem);
@@ -129,11 +135,11 @@ public class BasketItemsService {
         }
     }
 
-    public List<BasketItems> getFilteredBasketItems(int custId) {
+    public List<BasketItem> getFilteredBasketItems(int custId) {
         try {
-            List<BasketItems> basketItems= basketItemsRepository.findByUser(userRepository.findById(custId));
+            List<BasketItem> basketItems= basketItemsRepository.findByUser(userRepository.findById(custId));
 
-            List<BasketItems> filteredBasketItems = new ArrayList<>();
+            List<BasketItem> filteredBasketItems = new ArrayList<>();
             int i = 0;
             int j = basketItems.size();
             while(i<j)
@@ -167,7 +173,7 @@ public class BasketItemsService {
                 return false;
             }
 
-            List<BasketItems> tempBasket = basketItemsRepository.findByUser(userRepository.findById(custId));
+            List<BasketItem> tempBasket = basketItemsRepository.findByUser(userRepository.findById(custId));
 
             System.out.println(tempBasket);
             if(tempBasket.size()!=0) {
@@ -178,7 +184,7 @@ public class BasketItemsService {
                         tempBasket.get(i).setQuantSelected(prevQuantity + order.getQuantSelected());
                         tempBasket.get(i).setPriceOfItem(product.getPrice() * (prevQuantity + order.getQuantSelected()));
                         tempBasket.get(i).setDiscountedPrice(product.getPrice() * (prevQuantity + order.getQuantSelected()));
-                        BasketItems savedBasketItem = saveBasketItem(tempBasket.get(i));
+                        BasketItem savedBasketItem = saveBasketItem(tempBasket.get(i));
                         if (savedBasketItem.getProduct().getProductName() != null) {
                             logger.info("New Basket Item for Customer with CustId: {} and Product with ProductId: {} saved!", custId, order.getProductId());
                             return true;
@@ -189,15 +195,23 @@ public class BasketItemsService {
             }
 
             increaseTotalSalesOnInsertion(order);
-            BasketItems basketItem = new BasketItems();
+            BasketItem basketItem = new BasketItem();
             basketItem.setUser(userRepository.findById(custId));
             basketItem.setPriceOfItem(product.getPrice() * order.getQuantSelected());
             basketItem.setDiscountedPrice(product.getPrice() * order.getQuantSelected());
             basketItem.setProduct(product);
             basketItem.setQuantSelected(order.getQuantSelected());
-            basketItem.setStatus("unpaid");
+            basketItem.setStatus("Unpaid");
+            basketItem.setDeliveryStatus("Undelivered");
+            basketItem.setDeliveryTimestamp("-");
+            basketItem.setProductRatingByUser(0);
 
-            BasketItems savedBasketItem = saveBasketItem(basketItem);
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            SimpleDateFormat sdf3 = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+            basketItem.setOrderTimestamp(sdf3.format(timestamp));
+            System.out.println(timestamp);
+
+            BasketItem savedBasketItem = saveBasketItem(basketItem);
 
             if(savedBasketItem.getProduct().getProductName()!=null)
             {
@@ -214,9 +228,9 @@ public class BasketItemsService {
         }
     }
 
-    public BasketItems deleteBasketItem(int basketId) {
+    public BasketItem deleteBasketItem(int basketId) {
         try {
-            BasketItems basketItem = getBasketById(basketId);
+            BasketItem basketItem = getBasketById(basketId);
             if(basketItem!=null)
             {
                 int quantity = basketItem.getQuantSelected();
@@ -270,9 +284,9 @@ public class BasketItemsService {
 
     }
 
-    public BasketItems getBasketById(int basketId) {
+    public BasketItem getBasketById(int basketId) {
         try {
-            logger.info("Deleting Basket Item with Basket Id: {}", basketId);
+            logger.info("get Basket Item with Basket Id: {}", basketId);
             return basketItemsRepository.getById(basketId);
         }
         catch(Exception e)
@@ -280,5 +294,103 @@ public class BasketItemsService {
             logger.error("Basket Item with BasketId: {} could not be deleted!",basketId);
             return null;
         }
+    }
+
+    public List<BasketItem> getPastOrders(int custId) {
+        List<BasketItem> pastOrders = new ArrayList<>();
+        List<BasketItem> basketItemList = basketItemsRepository.findAll();
+
+        for(BasketItem basketItem : basketItemList) {
+            if(basketItem.getUser() != null && basketItem.getUser().getId() == custId) {
+                pastOrders.add(basketItem);
+                System.out.println(basketItem.getBasketId());
+            }
+        }
+        return pastOrders;
+    }
+
+    public int saveProductRating(int basketId, int rating) {
+        BasketItem basketItem = basketItemsRepository.getById(basketId);
+        basketItem.setProductRatingByUser(rating);
+
+        Product product = basketItem.getProduct();
+        List<BasketItem> basketItemList = basketItemsRepository.findAll();
+        int userCount = 0;
+        int ratingSum = 0;
+        for(BasketItem basketItems : basketItemList) {
+            if(basketItems.getProduct() == product && basketItems.getStatus().equalsIgnoreCase("paid")) {
+
+                System.out.println(basketItems.getBasketId());
+
+                ratingSum += basketItems.getProductRatingByUser();
+
+                userCount++;
+            }
+        }
+
+        double avgRating = ratingSum / userCount;
+        product.setRating((int) Math.round(avgRating));
+        saveBasketItem(basketItem);
+        productService.saveProduct(product);
+        return basketItem.getProductRatingByUser();
+    }
+
+    public boolean updatePaymentStatus(int customerId)
+    {
+        List<BasketItem> custOrder = getFilteredBasketItems(customerId);
+
+        double cost = calculateDiscountedPrice(customerId);
+
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+        String dateTime = dateFormat.format(timestamp);
+
+        int orderId = custOrder.get(0).getBasketId();
+
+        for(BasketItem basketItem : custOrder) {
+            Product product = basketItem.getProduct();
+            int productQuantity = product.getQuantAvailable();
+            if (productQuantity > 0)
+                productQuantity--;
+
+            int totalSales = product.getTotalSales() + basketItem.getQuantSelected();
+            product.setTotalSales(totalSales);
+            System.out.println(totalSales);
+            productService.saveProduct(product);
+            basketItem.setStatus("Paid");
+            basketItem.setDeliveryStatus("Ongoing");
+            basketItem.setOrderTimestamp(dateTime);
+            System.out.println(dateTime);
+            basketItemsRepository.save(basketItem);
+
+        }
+
+        User user = userRepository.findById(customerId);
+        System.out.println(user);
+        CustomerProfile cp = customerProfileRepository.findByUser(user);
+        String emailText =
+                "<p> Dear " + user.getUsername() + ",<br/>" +
+                        "Thank you for the purchase! Your payment for order is received successfully. <br/>"+
+                        "Please find invoice of your order in the attachment.<br/>"+
+                        "We will deliver your order at your doorstep as soon as possible.<br/><br/>"+
+                        "Kind Regards,<br/>" +
+                        "LocAll Team </p>";
+
+        String invoiceDate = dateTime.substring(0, Math.min(dateTime.length(), 10));
+
+        String html = sendEmailService.parseThymeleafTemplate(invoiceDate, user.getUsername(), cp, custOrder, cost, "invoice");
+        try {
+            System.out.println("PDF Generating..");
+            sendEmailService.generatePdfFromHtml(html, orderId);
+            String pathToAttachment = System.getProperty("user.home") + File.separator + orderId + ".pdf";
+            System.out.println(pathToAttachment);
+            System.out.println("Sending Invoice..");
+            sendEmailService.sendEmailWithAttachment(user,"Your Payment is Successful!", emailText, pathToAttachment);
+            System.out.println("Invoice sent");
+        } catch (IOException | DocumentException e) {
+            e.printStackTrace();
+        }
+
+        return true;
     }
 }

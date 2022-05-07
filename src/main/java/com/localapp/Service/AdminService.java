@@ -1,9 +1,15 @@
 package com.localapp.Service;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.time.Month;
+import java.util.*;
 
+import com.localapp.Model.BasketItem;
+import com.localapp.Model.Product;
+import com.localapp.Model.User;
+import com.localapp.PayloadResponse.AdminAnalyticsResponse;
+import com.localapp.PayloadResponse.AdminCategorySales;
+import com.localapp.PayloadResponse.MonthWiseRevenue;
+import com.localapp.Repository.BasketItemsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +27,22 @@ public class AdminService {
     @Autowired
     SendEmailService sendEmailService;
 
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    ProductService productService;
+
+    @Autowired
+    BusinessService businessService;
+
+    @Autowired
+    BasketItemsRepository basketItemsRepository;
+
     public List<Business> findBusinesses() {
         List<Business> businesses = businessRepository.findByStatus("Pending");
         List<Business> pendingBusinesses =new ArrayList<>();
-//        while(businesses.size()>10) {
-//            businesses.remove(10);
-//        }
+
         Iterator<Business> iterator = businesses.iterator();
         for (int i = 0; i < 10 && iterator.hasNext(); i++)
             pendingBusinesses.add(iterator.next());
@@ -50,7 +66,7 @@ public class AdminService {
 
         //Send Email Service
         try {
-            sendEmailService.sendHtmlMessage(business,"Welcome! Business verified successfully", emailText);
+            sendEmailService.sendHtmlMessage(business.getUser().getEmail(),"Welcome! Business verified successfully", emailText);
         } catch (MessagingException ex) {
             ex.printStackTrace();
         }
@@ -73,7 +89,7 @@ public class AdminService {
 
         //Send Email Service
         try {
-            sendEmailService.sendHtmlMessage(business,"Business rejected", emailText);
+            sendEmailService.sendHtmlMessage(business.getUser().getEmail(),"Business rejected", emailText);
         } catch (MessagingException ex) {
             ex.printStackTrace();
         }
@@ -84,6 +100,116 @@ public class AdminService {
     }
 
 
+    public AdminAnalyticsResponse getAdminReportAnalytics() {
+        List<User> users = userService.findAllUsers();
+        List<Product> products = productService.getAllProducts();
+        List<Business> businesses = businessService.findAllBusinesses();
+
+        int totalCustomers = 0;
+        int totalVendors = 0;
+        int totalProducts = 0;
+        int totalCategories;
+        int totalSales = 0;
+        double revenue = 0;
+
+        Map<String, Integer> categories = new LinkedHashMap<>();
+        Map<String, Integer> categorySales = new LinkedHashMap<>();
+        //total customer
+        for(User u : users){
+            if(u.getRole().equalsIgnoreCase("customer"))
+                totalCustomers++;
+            if(u.getRole().equalsIgnoreCase("vendor"))
+                totalVendors++;
+        }
+
+        //total products
+        for(Product p : products){
+            totalProducts++;
+        }
+
+        //total categories
+        for(Business b : businesses) {
+            String category= b.getBusinessCategory();
+            category = category.replaceAll("Store", "");
+            category = category.replaceAll("Shop", "");
+            category = category.trim();
+
+            if(categories.containsKey(category))
+                categories.put(category, categories.get(category) + 1);
+            else
+                categories.put(category, 1);
+
+            //total sales
+            Set<Product> productSet = b.getProducts();
+
+            for(Product p : productSet){
+                totalSales += p.getTotalSales();
+
+                //CategoryWiseSale
+                if(categorySales.containsKey(category))
+                    categorySales.put(category, categorySales.get(category)  + p.getTotalSales());
+                else
+                    categorySales.put(category, p.getTotalSales());
+            }
 
 
+        }
+
+        totalCategories = categories.size();
+
+        //total revenue generated
+        List<BasketItem> basketItems = basketItemsRepository.findAll();
+
+        for(BasketItem b : basketItems){
+            if(b.getDeliveryStatus().equalsIgnoreCase("Delivered")){
+                revenue += b.getDiscountedPrice();
+            }
+        }
+
+        List<AdminCategorySales> adminCategorySales = new ArrayList<>();
+        //category wise sales
+        for (Map.Entry<String, Integer> sale : categorySales.entrySet()) {
+            AdminCategorySales sales = new AdminCategorySales(sale.getKey(), sale.getValue());
+            adminCategorySales.add(sales);
+        }
+        AdminAnalyticsResponse ar = new AdminAnalyticsResponse(totalSales, revenue, totalCustomers, totalVendors, totalProducts, totalCategories,adminCategorySales, getMonthWiseRevenue());
+        return ar;
+    }
+
+    public List<MonthWiseRevenue> getMonthWiseRevenue(){
+        List<BasketItem> basketItems = basketItemsRepository.findAll();
+
+        List<MonthWiseRevenue> monthWiseRevenue = new ArrayList<>();
+        Map<String, Double > monthRevenueChart = new LinkedHashMap<>();
+
+
+        for(int i = 1; i <= 12; i++){
+            String month = String.valueOf(Month.of(i)).substring(0, 3).toLowerCase();
+            monthRevenueChart.put(month,0.0);
+        }
+
+        for(BasketItem basketItem : basketItems){
+            if(basketItem.getDeliveryStatus().equals("Delivered"))
+            {
+                double productRev = basketItem.getDiscountedPrice();
+                //month revenue
+                String dateTime = basketItem.getDeliveryTimestamp();
+                String months = dateTime.substring(3, 5);
+                String month = String.valueOf(Month.of(Integer.parseInt(months)));
+                String mon = month.substring(0, 3).toLowerCase();
+                System.out.println(mon);
+                if(monthRevenueChart.containsKey(mon))
+                    monthRevenueChart.put(mon, monthRevenueChart.get(mon) + productRev);
+                else
+                    monthRevenueChart.put(mon, productRev);
+            }
+        }
+
+        for (Map.Entry<String, Double> month : monthRevenueChart.entrySet()) {
+            MonthWiseRevenue monthRevenue = new MonthWiseRevenue(month.getKey(), month.getValue());
+            monthWiseRevenue.add(monthRevenue);
+        }
+
+        return monthWiseRevenue;
+    }
 }

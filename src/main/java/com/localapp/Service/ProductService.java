@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.localapp.Model.*;
 import com.localapp.PayloadResponse.ProductCategoryResponse;
+import com.localapp.Repository.BasketItemsRepository;
 import com.localapp.Repository.ProductTagsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,11 +24,19 @@ public class ProductService {
     ProductRepository productRepository;
 
     @Autowired
+    BasketItemsRepository basketItemsRepository;
+
+    @Autowired
     ProductTagsRepository categoryTagsRepository;
+
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
 
     public Product saveVendorProduct(Product product, int business_id) {
 //        product.setProductTags(product.getProductTags());
-
+        product.setRating(0);
+        product.setTotalSales(0);
         Business b = businessService.getById(business_id);
         Set<Product> products = b.getProducts();
         products.add(product);
@@ -51,7 +60,10 @@ public class ProductService {
         updateProduct.setQuantAvailable(product.getQuantAvailable());
         updateProduct.setPrice(product.getPrice());
         updateProduct.setProductDesc(product.getProductDesc());
-
+        updateProduct.setTotalSales(product.getTotalSales());
+        updateProduct.setRating(product.getRating());
+        updateProduct.setMaxDiscount(product.getMaxDiscount());
+        updateProduct.setMinProducts(product.getMinProducts());
         if(product.getProductImage() != null)
             updateProduct.setProductImage(product.getProductImage());
 
@@ -69,8 +81,18 @@ public class ProductService {
         return productRepository.findById(productId);
     }
 
-    public Product deleteById(int productId) {
-        return productRepository.deleteById(productId);
+    public Product findByProductName(String productName) {
+        return productRepository.findByProductName(productName);
+    }
+
+    public Boolean deleteById(int productId) {
+        Product product = getById(productId);
+        List<BasketItem> basketItems = basketItemsRepository.findByProduct(product);
+        for(BasketItem basketItem : basketItems) {
+            basketItemsRepository.delete(basketItem);
+        }
+        productRepository.deleteById(productId);
+        return true;
     }
 
     public Boolean existsById(int productId) {
@@ -128,7 +150,7 @@ public class ProductService {
 
     public List<Product> getMostPopularProducts()
     {
-        List<Product> products = productRepository.findAll();
+        List<Product> products = getAllProducts();
         List<Product> popularProducts = products.stream()
                 .sorted(Comparator.comparing(Product::getTotalSales).reversed())
                 .collect(Collectors.toList());

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" th:href="@{src/main/resources/invoice_style.css}" />
+</head>
+
+<body>
+
+<div id="invoiceholder">
+    <div id="invoice" class="effect2">
+
+        <div id="invoice-top">
+            <div class="logo"><img src="src/main/resources/images/locAll.png" alt="Logo" /></div>
+            <div class="title">
+                <h1>Invoice</h1>
+                <p th:text="${invoiceDate}">Invoice Date: </p><br />
+            </div>
+        </div>
+        <br />
+        <div id="invoice-mid">
+            <div id="message">
+                <h2>Hello ,<b th:text="${userName}"> </b></h2>
+                <p>
+                    Thank You for your Purchase, here is the invoice of your Order-
+                </p>
+            </div>
+
+            <div class="clearfix">
+                <div class="col-left">
+                    <div class="billinginfo">
+                        <h2 id="supplier">Billing Address:</h2>
+                        <p th:text="${billingAddress} + ' ' + ${billingPincode}"></p>
+                    </div>
+                </div>
+                <div class="col-right">
+                    <div class="shippinginfo">
+                        <h2 id="supplier1">Shiping Address:</h2>
+                        <p th:text="${shippingAddress} +' '+ ${shippingPincode}" ></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br /> <br />
+        <div id="invoice-bot">
+
+            <div id="table">
+                <table class="table-main">
+                    <thead>
+                    <tr class="tabletitle">
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Discounted Price</th>
+                    </tr>
+                    </thead>
+                    <tr class="list-item" th:each="tempBasketItem:${basketItem}">
+                    <td th:text="${tempBasketItem.product.productName}"></td>
+                    <td th:text="${tempBasketItem.quantSelected}"></td>
+                    <td th:text="${'Rs. ' + tempBasketItem.product.price}"></td>
+                    <td th:text="${'Rs. ' + tempBasketItem.discountedPrice}"> </td>
+                    </tr>
+                    <tr class="list-item total-row">
+                        <th colspan="4" class="tableitem" th:text="${'Total: Rs. ' +totalPrice}">
+                        </th>
+                    </tr>
+
+                </table>
+            </div>
+
+        </div>
+        <footer>
+            <div id="legalcopy" class="clearfix">
+                <p class="col-right">Our mailing address is:
+                    <span class="email"><a href="mailto:locall.ecommerce@gmail.com">locall.ecommerce@gmail.com  &nbsp;&nbsp;</a></span>
+                </p>
+            </div>
+        </footer>
+    </div>
+</div>
+
+
+
+</body>
+
+</html>

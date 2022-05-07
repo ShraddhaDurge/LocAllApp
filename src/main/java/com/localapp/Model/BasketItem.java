@@ -7,12 +7,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.sql.Timestamp;
+
 @Data
 @Entity
 @Table(name = "basket_items")
 @AllArgsConstructor
 @NoArgsConstructor
-public class BasketItems {
+public class BasketItem {
 
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Id
@@ -30,6 +33,18 @@ public class BasketItems {
 
     @Column(name = "status")
     String status;
+
+    @Column(name = "delivery_status")
+    String deliveryStatus;
+
+    @Column(name = "rating")
+    int productRatingByUser;
+
+    @Column(name = "orderTimestamp")
+    String orderTimestamp;
+
+    @Column(name = "deliveryTimestamp")
+    String deliveryTimestamp;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @OneToOne(fetch = FetchType.EAGER)

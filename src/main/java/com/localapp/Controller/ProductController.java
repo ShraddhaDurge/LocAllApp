@@ -6,6 +6,8 @@ import java.util.Set;
 
 import com.localapp.Model.ProductTags;
 import com.localapp.PayloadResponse.ProductCategoryResponse;
+import com.localapp.PayloadResponse.RecommendationResponse;
+import com.localapp.Service.Recommendation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +18,6 @@ import com.localapp.PayloadResponse.MessageResponse;
 import com.localapp.PayloadResponse.ProductRegResponse;
 import com.localapp.Model.Product;
 import com.localapp.Service.ProductService;
-import com.localapp.Service.BusinessService;
 
 @RequestMapping("/product")
 @RestController
@@ -25,14 +26,14 @@ public class ProductController {
 
     @Autowired
     ProductService productService;
+
     @Autowired
-    BusinessService businessService;
+    Recommendation recommendationService;
 
     @PostMapping("/add/{business_id}")
     public ResponseEntity<?> addProduct(@PathVariable("business_id") int business_id, @RequestBody Product newProduct) {
 
         System.out.println(newProduct);
-
         Product productRegistered = productService.saveVendorProduct(newProduct,business_id);             //save new user details in database
 
         return ResponseEntity.ok(new ProductRegResponse("Product registered successfully!", productRegistered));
@@ -72,7 +73,7 @@ public class ProductController {
         }
     }
 
-    @RequestMapping(value = "/delete/{productId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/delete/{productId}", method = RequestMethod.GET)
     public ResponseEntity<MessageResponse> delete(@PathVariable(value = "productId") int productId) throws IOException {
         try {
             productService.deleteById(productId);
@@ -80,6 +81,7 @@ public class ProductController {
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Product could not be deleted!"));
@@ -115,6 +117,22 @@ public class ProductController {
     @GetMapping(value = "/getCategoryProducts/{category:[a-zA-Z &+-]*}")
     public List<Product> getCategoryProducts(@PathVariable("category")  String category) {
         return productService.getCategoryWiseProducts(category);
+    }
+    @GetMapping(value = "/getRecommendedProducts/{userid}")
+    public List<Product> getRecommendedProducts(@PathVariable("userid") int userid) {
+        RecommendationResponse recommendationResponse = recommendationService.getRecommendation(userid);
+        System.out.println(recommendationResponse.getProductList());
+        return recommendationService.getRecommendedProducts(recommendationResponse);
+    }
+
+    @GetMapping(value = "/getByProductName/{productName:[a-zA-Z &+-]*}")
+    public Product getByProductName(@PathVariable("productName") String productName) {
+        return productService.findByProductName(productName);
+    }
+
+    @GetMapping(value = "/getAllProducts")
+    public List<Product> getAllProducts() {
+        return productService.getAllProducts();
     }
 
 }

@@ -54,7 +54,10 @@ public class Product {
     double maxDiscount;
 
     @Column(name = "total_sales")
-    int totalSales = 0;
+    int totalSales;
+
+    @Column(name = "rating")
+    int rating;
 
     @ManyToMany(fetch = FetchType.EAGER,  cascade = { CascadeType.PERSIST, CascadeType.MERGE } )
     @JoinTable(name = "product_tags_relation",

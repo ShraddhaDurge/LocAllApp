@@ -1,13 +1,10 @@
 package com.localapp.Service;
 
-import com.localapp.Model.Product;
+import com.localapp.Model.*;
 import com.localapp.PayloadRequest.BusinessRequest;
 import com.localapp.PayloadRequest.UpdateBusinessRequest;
-import com.localapp.Model.Business;
-import com.localapp.Model.Pincode;
-import com.localapp.Model.User;
-import com.localapp.Repository.BusinessRepository;
-import com.localapp.Repository.PincodeRepository;
+import com.localapp.PayloadResponse.*;
+import com.localapp.Repository.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.time.Month;
+import java.util.stream.Collectors;
 
 @Service
 public class BusinessService {
@@ -29,7 +28,16 @@ public class BusinessService {
     PincodeRepository pincodeRepository;
 
     @Autowired
+    BasketItemsRepository basketItemsRepository;
+
+    @Autowired
+    CustomerProfileRepository customerProfileRepository;
+
+    @Autowired
     UserService userService;
+
+    @Autowired
+    ProductRepository productRepository;
 
     private static final Logger logger = LogManager.getLogger(UserService.class);
 
@@ -116,4 +124,154 @@ public class BusinessService {
         }
         return null;
     }
+
+    public List<OrderManagementResponse> getCustomerOrders(int business_id) {
+
+        List<BasketItem> basketItems = basketItemsRepository.findAll();
+        Business business = businessRepository.findById(business_id);
+
+        List<OrderManagementResponse> finalProducts = new ArrayList<>();
+
+        for(BasketItem basketItem : basketItems){
+            if(!basketItem.getDeliveryStatus().equalsIgnoreCase("Undelivered") &&
+                    business.getProducts().contains(basketItem.getProduct()))
+            {
+                CustomerProfile customer = customerProfileRepository.findByUser(basketItem.getUser());
+                OrderManagementResponse order = new OrderManagementResponse(basketItem.getBasketId(),basketItem.getProduct().getProductImage(),basketItem.getProduct().getProductName(),
+                        basketItem.getQuantSelected(),basketItem.getDiscountedPrice(),basketItem.getOrderTimestamp(), customer.getShippingAddress() +" "+ customer.getShippingPincode(),
+                        basketItem.getDeliveryStatus());
+                finalProducts.add(order);
+            }
+        }
+        return finalProducts;
+    }
+
+    public String setOrderDeliveredStatus(int basketId) {
+        BasketItem basketItem = basketItemsRepository.getById(basketId);
+        basketItem.setDeliveryStatus("Delivered");
+
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+        String dateTime = dateFormat.format(timestamp);
+
+        basketItem.setDeliveryTimestamp(dateTime);
+
+        basketItemsRepository.save(basketItem);
+        return basketItem.getDeliveryStatus();
+    }
+
+    public VendorAnalyticsResponse getVendorReportAnalytics(int businessId) {
+        Business business = getById(businessId);
+        List<BasketItem> basketItems = basketItemsRepository.findAll();
+        List<Product> products= new ArrayList<>(business.getProducts());
+        List<ProductWiseSales> productWiseSales = new ArrayList<>();
+        Map<String, Double> productRevenue = new HashMap<>();
+
+        Set<Integer> buyers = new HashSet<>();
+        int totalSales = 0;
+        int totalStocks = 0;
+        double revenue = 0;
+
+        for(Product product : products) {
+            totalSales += product.getTotalSales();
+            totalStocks++;
+        }
+
+        //Product wise revenue
+        for(BasketItem basketItem : basketItems){
+            if(basketItem.getDeliveryStatus().equalsIgnoreCase("Delivered") &&
+                    business.getProducts().contains(basketItem.getProduct()))
+            {
+                double productRev = basketItem.getDiscountedPrice();
+                System.out.println(productRev);
+                revenue += productRev;
+                buyers.add(basketItem.getUser().getId());
+
+                if(productRevenue.containsKey(basketItem.getProduct().getProductName())) {
+                    double pr = productRevenue.get(basketItem.getProduct().getProductName());
+                    productRevenue.put(basketItem.getProduct().getProductName(), pr + productRev);
+                    System.out.println(productRevenue);
+                }
+                else {
+                    productRevenue.put(basketItem.getProduct().getProductName(), productRev);
+                    System.out.println(productRevenue);
+                }
+            }
+        }
+        for(Map.Entry<String, Double> entry : productRevenue.entrySet()) {
+            Product product = productRepository.findByProductName(entry.getKey());
+            ProductWiseSales productSales = new ProductWiseSales(entry.getKey() , product.getTotalSales(), entry.getValue());
+            productWiseSales.add(productSales);
+        }
+
+
+        VendorAnalyticsResponse vr = new VendorAnalyticsResponse(totalSales,revenue,totalStocks,buyers.size(), productWiseSales, getMonthWiseRevenue(business), getVendorTopProducts(productWiseSales));
+        System.out.println(vr);
+
+        return vr;
+    }
+
+    public List<VendorTopProducts> getVendorTopProducts(List<ProductWiseSales> productWiseSales){
+        //Top Products
+        List<VendorTopProducts> vendorTopProducts = new ArrayList<>();
+
+        int length = productWiseSales.size();
+        if(productWiseSales.size() > 5)
+            length = 5;
+
+        List<ProductWiseSales> popularProducts = productWiseSales.stream()
+                .sorted(Comparator.comparing(ProductWiseSales::getSales).reversed())
+                .collect(Collectors.toList());
+
+        for (int i = 0; i < length; i++) {
+            //Top products revenue
+            Product product = productRepository.findByProductName(popularProducts.get(i).getProduct());
+            VendorTopProducts topProducts = new VendorTopProducts(popularProducts.get(i).getProduct(),popularProducts.get(i).getRevenue(), popularProducts.get(i).getSales(), product.getQuantAvailable() );
+            vendorTopProducts.add(topProducts);
+        }
+        return  vendorTopProducts;
+    }
+
+    public List<MonthWiseRevenue> getMonthWiseRevenue(Business business){
+
+        List<BasketItem> basketItems = basketItemsRepository.findAll();
+        List<Product> products= new ArrayList<>(business.getProducts());
+
+        List<MonthWiseRevenue> monthWiseRevenue = new ArrayList<>();
+        Map<String, Double > monthRevenueChart = new LinkedHashMap<>();
+
+
+        for(int i = 1; i <= 12; i++){
+            String month = String.valueOf(Month.of(i)).substring(0, 3).toLowerCase();
+            monthRevenueChart.put(month,0.0);
+        }
+
+        for(BasketItem basketItem : basketItems){
+            if(basketItem.getDeliveryStatus().equalsIgnoreCase("Delivered") &&
+                    business.getProducts().contains(basketItem.getProduct()))
+            {
+                double productRev = basketItem.getDiscountedPrice();
+
+                //month revenue
+                String dateTime = basketItem.getDeliveryTimestamp();
+                String months = dateTime.substring(3, 5);
+                String month = String.valueOf(Month.of(Integer.parseInt(months)));
+                String mon = month.substring(0, 3).toLowerCase();
+                System.out.println(mon);
+                if(monthRevenueChart.containsKey(mon))
+                    monthRevenueChart.put(mon, monthRevenueChart.get(mon) + productRev);
+                else
+                    monthRevenueChart.put(mon, productRev);
+            }
+        }
+
+        for (Map.Entry<String, Double> month : monthRevenueChart.entrySet()) {
+            MonthWiseRevenue monthRevenue = new MonthWiseRevenue(month.getKey(), month.getValue());
+            monthWiseRevenue.add(monthRevenue);
+        }
+
+        return monthWiseRevenue;
+    }
+
+
 }

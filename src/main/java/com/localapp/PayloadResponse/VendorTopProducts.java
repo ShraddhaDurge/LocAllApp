@@ -1,18 +1,18 @@
 package com.localapp.PayloadResponse;
 
-import java.util.List;
-
-import com.localapp.Model.BasketItem;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Comparator;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BasketResponse {
-
-    List<BasketItem> basketItems;
-    double totalCost;
-
+public class VendorTopProducts {
+    String productName;
+    double totalRevenue;
+    int totalSales;
+    int inventory;
 }
+

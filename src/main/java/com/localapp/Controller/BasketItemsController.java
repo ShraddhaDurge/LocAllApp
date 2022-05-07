@@ -2,8 +2,10 @@ package com.localapp.Controller;
 
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.List;
 
+import com.localapp.Model.BasketItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,6 @@ import com.localapp.PayloadRequest.OrderRequest;
 import com.localapp.PayloadResponse.BasketResponse;
 import com.localapp.PayloadResponse.MessageResponse;
 import com.localapp.Service.BasketItemsService;
-import com.localapp.Model.BasketItems;
 
 @RequestMapping("/customer")
 @RestController
@@ -62,7 +63,7 @@ public class BasketItemsController {
         try {
             logger.info("Fetching Basket Items for Customer with custId: {}",custId);
             double cost = basketItemsService.calculateDiscountedPrice(custId);
-            List<BasketItems> basketItems = basketItemsService.getFilteredBasketItems(custId);
+            List<BasketItem> basketItems = basketItemsService.getFilteredBasketItems(custId);
             if(cost<=0 && basketItems==null)
                 return ResponseEntity
                         .badRequest()
@@ -81,7 +82,7 @@ public class BasketItemsController {
     public ResponseEntity<MessageResponse> getBasketItemsById(@PathVariable (value = "basketId") int basketId) {
         try {
             logger.info("Fetching Basket Items Details for BasketItem: {}",basketId);
-            BasketItems basketItem = basketItemsService.getBasketById(basketId);
+            BasketItem basketItem = basketItemsService.getBasketById(basketId);
             if(basketItem!=null) {
                 logger.info("Basket Item Found!");
                 return ResponseEntity.ok(new MessageResponse("Basket Item found!"));
@@ -117,18 +118,36 @@ public class BasketItemsController {
         }
     }
 
-    @GetMapping(value = "/sendInvoice/{custId}")
-    public ResponseEntity<?> sendInvoice(@PathVariable (value = "custId") int custId) {
+    @GetMapping(value = "/viewPastOrders/{custId}")
+    public List<BasketItem>  viewPastOrders(@PathVariable (value = "custId") int custId) {
+            logger.info("Sending past orders to Customer with custId: {}",custId);
+            return basketItemsService.getPastOrders(custId);
+    }
+
+    @GetMapping(value = "/saveProductRating/{basketId}/{rating}")
+    public int  saveProductRating(@PathVariable (value = "basketId") int basketId, @PathVariable (value = "rating") int rating) {
+        return basketItemsService.saveProductRating(basketId,rating);
+    }
+
+    @GetMapping("/setOrderPaymentStatus/{custId}")
+    public ResponseEntity<?> setPaymentStatus(@PathVariable("custId") int custId)
+    {
         try {
-            logger.info("Sending invoice to Customer with custId: {}",custId);
-            return ResponseEntity.ok(new MessageResponse("Payment done successfully!"));
+            logger.info("Updating payment status of Basket Items with userId: {}",custId);
+            boolean updated = basketItemsService.updatePaymentStatus(custId);
+            if(updated)
+                return ResponseEntity.ok(new MessageResponse("Payment Updation Successful!"));
+            else
+                return ResponseEntity.ok(new MessageResponse("Payment Updation could not be done!"));
         }
-        catch (Exception e) {
-            logger.error("Error Occured while sending invoice to Customer with CustId: {}",custId);
+        catch (Exception e)
+        {
+            logger.error("Error Occured while updating payment status of basket item with basketId: {}",custId);
             return ResponseEntity
                     .badRequest()
-                    .body(new MessageResponse("Error Occured while sending invoice to Customer with CustId: "+custId+"!"));
+                    .body(new MessageResponse("Error: Payment Updation could not be done!"));
         }
+
     }
 
 

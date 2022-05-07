@@ -1,6 +1,7 @@
 package com.localapp.Service;
 
 import java.util.Base64;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,7 +40,9 @@ public class UserService{
 		return userRepository.existsById(id);
 	}
 
-
+	public List<User> findAllUsers() {
+		return userRepository.findAll();
+	}
 
 	//check if valid user is trying to login
 	public User checkUser(LoginRequest userObject) {
