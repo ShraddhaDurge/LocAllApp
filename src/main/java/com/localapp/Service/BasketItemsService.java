@@ -175,7 +175,6 @@ public class BasketItemsService {
 
             List<BasketItem> tempBasket = basketItemsRepository.findByUser(userRepository.findById(custId));
 
-            System.out.println(tempBasket);
             if(tempBasket.size()!=0) {
                 for (int i = 0; i < tempBasket.size(); i++) {
                     if (tempBasket.get(i).getProduct().getProductId() == order.getProductId() && tempBasket.get(i).getStatus().equalsIgnoreCase("unpaid")) {
