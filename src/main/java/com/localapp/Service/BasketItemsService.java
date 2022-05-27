@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.localapp.Model.*;
+import com.localapp.PayloadResponse.ProductWiseSales;
 import com.localapp.Repository.CustomerProfileRepository;
 import com.localapp.Repository.UserRepository;
 import com.lowagie.text.DocumentException;
@@ -298,11 +298,12 @@ public class BasketItemsService {
     public List<BasketItem> getPastOrders(int custId) {
         List<BasketItem> pastOrders = new ArrayList<>();
         List<BasketItem> basketItemList = basketItemsRepository.findAll();
-
-        for(BasketItem basketItem : basketItemList) {
-            if(basketItem.getUser() != null && basketItem.getUser().getId() == custId) {
-                pastOrders.add(basketItem);
-                System.out.println(basketItem.getBasketId());
+        List<BasketItem> basketItems = basketItemList.stream()
+                .sorted(Comparator.comparing(BasketItem::getBasketId).reversed())
+                .collect(Collectors.toList());
+        for(BasketItem basketItem : basketItems) {
+            if(basketItem.getUser() != null && basketItem.getUser().getId() == custId && !basketItem.getDeliveryStatus().equalsIgnoreCase("Undelivered") ) {
+                    pastOrders.add(basketItem);
             }
         }
         return pastOrders;

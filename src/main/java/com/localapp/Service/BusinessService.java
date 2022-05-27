@@ -131,8 +131,11 @@ public class BusinessService {
         Business business = businessRepository.findById(business_id);
 
         List<OrderManagementResponse> finalProducts = new ArrayList<>();
+        List<BasketItem> basketItemsList = basketItems.stream()
+                .sorted(Comparator.comparing(BasketItem::getBasketId).reversed())
+                .collect(Collectors.toList());
 
-        for(BasketItem basketItem : basketItems){
+        for(BasketItem basketItem : basketItemsList){
             if(!basketItem.getDeliveryStatus().equalsIgnoreCase("Undelivered") &&
                     business.getProducts().contains(basketItem.getProduct()))
             {
@@ -205,7 +208,7 @@ public class BusinessService {
         }
 
 
-        VendorAnalyticsResponse vr = new VendorAnalyticsResponse(totalSales,revenue,totalStocks,buyers.size(), productWiseSales, getMonthWiseRevenue(business), getVendorTopProducts(productWiseSales));
+        VendorAnalyticsResponse vr = new VendorAnalyticsResponse(totalSales,revenue,totalStocks,buyers.size(), productWiseSales, getMonthWiseRevenue(business), getVendorTopProducts(productWiseSales), getVendorLastProducts(productWiseSales));
         System.out.println(vr);
 
         return vr;
@@ -228,6 +231,29 @@ public class BusinessService {
             Product product = productRepository.findByProductName(popularProducts.get(i).getProduct());
             VendorTopProducts topProducts = new VendorTopProducts(popularProducts.get(i).getProduct(),popularProducts.get(i).getRevenue(), popularProducts.get(i).getSales(), product.getQuantAvailable() );
             vendorTopProducts.add(topProducts);
+        }
+        return  vendorTopProducts;
+    }
+
+    public List<VendorTopProducts> getVendorLastProducts(List<ProductWiseSales> productWiseSales){
+        //Top Products
+        List<VendorTopProducts> vendorTopProducts = new ArrayList<>();
+
+        int length = productWiseSales.size();
+        if(productWiseSales.size() > 5)
+            length = 5;
+
+        List<ProductWiseSales> lastProducts = productWiseSales.stream()
+                .sorted(Comparator.comparing(ProductWiseSales::getSales))
+                .collect(Collectors.toList());
+
+        for (int i = 0; i < length; i++) {
+            //Top products revenue
+            if(lastProducts.get(i).getSales() < 10) {
+                Product product = productRepository.findByProductName(lastProducts.get(i).getProduct());
+                VendorTopProducts topProducts = new VendorTopProducts(lastProducts.get(i).getProduct(), lastProducts.get(i).getRevenue(), lastProducts.get(i).getSales(), product.getQuantAvailable());
+                vendorTopProducts.add(topProducts);
+            }
         }
         return  vendorTopProducts;
     }

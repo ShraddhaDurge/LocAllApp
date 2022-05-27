@@ -44,6 +44,8 @@ public class UserService{
 		return userRepository.findAll();
 	}
 
+	public void deleteById( int id) { userRepository.deleteById(id); }
+
 	//check if valid user is trying to login
 	public User checkUser(LoginRequest userObject) {
 		String reversedPassword = new StringBuffer(decodeString(userObject.getPassword())).reverse().toString();

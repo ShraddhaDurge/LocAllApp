@@ -18,4 +18,5 @@ public class VendorAnalyticsResponse {
     List<ProductWiseSales> productWiseSales;
     List<MonthWiseRevenue> monthWiseRevenue;
     List<VendorTopProducts> vendorTopProducts;
+    List<VendorTopProducts> vendorLastProducts;
 }

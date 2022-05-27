@@ -18,4 +18,6 @@ public class AdminAnalyticsResponse {
     int totalCategories;
     List<AdminCategorySales> categorySales;
     List<MonthWiseRevenue> monthWiseRevenues;
+    List<VendorTopProducts> topProducts;
+    List<VendorTopProducts> leastSellingProducts;
 }

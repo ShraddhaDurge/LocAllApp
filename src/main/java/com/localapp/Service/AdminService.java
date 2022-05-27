@@ -2,14 +2,14 @@ package com.localapp.Service;
 
 import java.time.Month;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.localapp.Model.BasketItem;
 import com.localapp.Model.Product;
 import com.localapp.Model.User;
-import com.localapp.PayloadResponse.AdminAnalyticsResponse;
-import com.localapp.PayloadResponse.AdminCategorySales;
-import com.localapp.PayloadResponse.MonthWiseRevenue;
+import com.localapp.PayloadResponse.*;
 import com.localapp.Repository.BasketItemsRepository;
+import com.localapp.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +38,9 @@ public class AdminService {
 
     @Autowired
     BasketItemsRepository basketItemsRepository;
+
+    @Autowired
+    ProductRepository productRepository;
 
     public List<Business> findBusinesses() {
         List<Business> businesses = businessRepository.findByStatus("Pending");
@@ -95,6 +98,7 @@ public class AdminService {
         }
 
         business.setPincodes(null);
+        userService.deleteById(business.getUser().getId());
         businessRepository.deleteById(businessid);
         return 0;
     }
@@ -172,7 +176,9 @@ public class AdminService {
             AdminCategorySales sales = new AdminCategorySales(sale.getKey(), sale.getValue());
             adminCategorySales.add(sales);
         }
-        AdminAnalyticsResponse ar = new AdminAnalyticsResponse(totalSales, revenue, totalCustomers, totalVendors, totalProducts, totalCategories,adminCategorySales, getMonthWiseRevenue());
+        AdminAnalyticsResponse ar = new AdminAnalyticsResponse(totalSales, revenue, totalCustomers,
+                totalVendors, totalProducts, totalCategories,adminCategorySales, getMonthWiseRevenue(),
+                getTopProducts(), getLeastSellingProducts());
         return ar;
     }
 
@@ -211,5 +217,69 @@ public class AdminService {
         }
 
         return monthWiseRevenue;
+    }
+
+    public List<VendorTopProducts> getLeastSellingProducts(){
+        //Top Products
+        List<VendorTopProducts> topProducts = new ArrayList<>();
+        List<Product> products = productService.getAllProducts();
+        List<BasketItem> basketItems = basketItemsRepository.findAll();
+        List<Product> popularProducts = products.stream()
+                .sorted(Comparator.comparing(Product::getTotalSales))
+                .collect(Collectors.toList());
+
+        int length = popularProducts.size();
+        if(popularProducts.size() > 5)
+            length = 5;
+
+        for (int i = 0; i < length; i++) {
+            //Top products revenue
+            Product product = productRepository.findByProductName(popularProducts.get(i).getProductName());
+            VendorTopProducts topProduct = new VendorTopProducts(product.getProductName(),product.getTotalSales() * product.getPrice(), product.getTotalSales(), product.getQuantAvailable() );
+            topProducts.add(topProduct);
+        }
+        return  topProducts;
+    }
+
+    public List<VendorTopProducts> getTopProducts(){
+        //Least Selling Products
+        List<VendorTopProducts> topProducts = new ArrayList<>();
+        List<BasketItem> basketItems = basketItemsRepository.findAll();
+        Map<String, Double> productRevenue = new HashMap<>();
+
+        //Product wise revenue
+        for(BasketItem basketItem : basketItems){
+            if(basketItem.getDeliveryStatus().equalsIgnoreCase("Delivered"))
+            {
+                double productRev = basketItem.getDiscountedPrice();
+                System.out.println(productRev);
+
+                if(productRevenue.containsKey(basketItem.getProduct().getProductName())) {
+                    double pr = productRevenue.get(basketItem.getProduct().getProductName());
+                    productRevenue.put(basketItem.getProduct().getProductName(), pr + productRev);
+                    System.out.println(productRevenue);
+                }
+                else {
+                    productRevenue.put(basketItem.getProduct().getProductName(), productRev);
+                    System.out.println(productRevenue);
+                }
+            }
+        }
+
+        List<Map.Entry<String, Double> > list
+                = new LinkedList<>(productRevenue.entrySet());
+        Collections.sort(list,(i1, i2) -> i2.getValue().compareTo(i1.getValue()));
+
+        int length = list.size();
+        if(list.size() > 5)
+            length = 5;
+
+        for (int i = 0; i < length; i++) {
+            //Top products revenue
+            Product product = productRepository.findByProductName(list.get(i).getKey());
+            VendorTopProducts topProduct = new VendorTopProducts(product.getProductName(),list.get(i).getValue(), product.getTotalSales(), product.getQuantAvailable() );
+            topProducts.add(topProduct);
+        }
+        return  topProducts;
     }
 }

@@ -104,19 +104,19 @@ public class ProductController {
         return productService.getAllTags();
     }
 
-    @GetMapping(value = "/getProductCategories")
-    public List<ProductCategoryResponse> getProductCategories() {
-        return productService.getProductCategories();
+    @GetMapping(value = "/getProductCategories/{pincode}")
+    public List<ProductCategoryResponse> getProductCategories(@PathVariable("pincode") int pincode) {
+        return productService.getProductCategories(pincode);
     }
 
-    @GetMapping(value = "/getMostPopularProducts")
-    public List<Product> getMostPopularProducts() {
-        return productService.getMostPopularProducts();
+    @GetMapping(value = "/getMostPopularProducts/{pincode}")
+    public List<Product> getMostPopularProducts(@PathVariable("pincode") int pincode) {
+        return productService.getMostPopularProducts(pincode);
     }
 
-    @GetMapping(value = "/getCategoryProducts/{category:[a-zA-Z &+-]*}")
-    public List<Product> getCategoryProducts(@PathVariable("category")  String category) {
-        return productService.getCategoryWiseProducts(category);
+    @GetMapping(value = "/getCategoryProducts/{category:[a-zA-Z &+-]*}/{pincode}")
+    public List<Product> getCategoryProducts(@PathVariable("category")  String category, @PathVariable("pincode") int pincode) {
+        return productService.getCategoryWiseProducts(category, pincode);
     }
     @GetMapping(value = "/getRecommendedProducts/{userid}")
     public List<Product> getRecommendedProducts(@PathVariable("userid") int userid) {
@@ -133,6 +133,11 @@ public class ProductController {
     @GetMapping(value = "/getAllProducts")
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
+    }
+
+    @GetMapping(value = "/getTagWiseProducts/{tag:[a-zA-Z &+-]*}")
+    public List<Product> getTagWiseProducts(@PathVariable("tag") String tag) {
+        return productService.getTagWiseProducts(tag);
     }
 
 }

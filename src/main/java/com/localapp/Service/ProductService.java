@@ -29,6 +29,12 @@ public class ProductService {
     @Autowired
     ProductTagsRepository categoryTagsRepository;
 
+    @Autowired
+    CustomerService customerService;
+
+    @Autowired
+    UserService userService;
+
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
@@ -88,8 +94,10 @@ public class ProductService {
     public Boolean deleteById(int productId) {
         Product product = getById(productId);
         List<BasketItem> basketItems = basketItemsRepository.findByProduct(product);
-        for(BasketItem basketItem : basketItems) {
-            basketItemsRepository.delete(basketItem);
+        if(!basketItems.isEmpty()) {
+            for (BasketItem basketItem : basketItems) {
+                basketItemsRepository.delete(basketItem);
+            }
         }
         productRepository.deleteById(productId);
         return true;
@@ -110,45 +118,74 @@ public class ProductService {
         return categoryTagsRepository.findAll();
     }
 
-    public List<ProductCategoryResponse> getProductCategories() {
+    public List<ProductCategoryResponse> getProductCategories(int pincode) {
         List<Business> businesses = businessService.findAllBusinesses();
         List<ProductCategoryResponse> productCategories = new ArrayList<>();
 
         for(Business b : businesses) {
-            String category= b.getBusinessCategory();
-            category = category.replaceAll("Store", "");
-            category = category.replaceAll("Shop", "");
-            category = category.trim();
-            if(!b.getProducts().isEmpty()) {
-                Optional<Product> p = b.getProducts().stream().findFirst();
-                ProductCategoryResponse pc = new ProductCategoryResponse(category, p.get().getProductImage());
-                productCategories.add(pc);
+            Set<Pincode> bPincodes = b.getPincodes();
+            if(pincode != 0) {
+                for (Pincode pin : bPincodes) {
+                    if (pin.getPincode() == pincode) {
+                        addCategory(b, productCategories);
+                    }
+                }
+            } else {
+                addCategory(b, productCategories);
             }
         }
         return productCategories;
     }
 
-    public List<Product> getCategoryWiseProducts(String getcategory) {
+    public String trimCategory(String category) {
+        category = category.replaceAll("Store", "");
+        category = category.replaceAll("Shop", "");
+        return category.trim();
+    }
+
+    public List<ProductCategoryResponse> addCategory(Business b,List<ProductCategoryResponse> productCategories) {
+        String category = trimCategory(b.getBusinessCategory());
+
+        if (!b.getProducts().isEmpty()) {
+            Optional<Product> p = b.getProducts().stream().findFirst();
+            ProductCategoryResponse pc = new ProductCategoryResponse(category, p.get().getProductImage());
+            productCategories.add(pc);
+        }
+
+        return productCategories;
+    }
+
+    public List<Product> getCategoryWiseProducts(String getcategory, int pincode) {
         List<Business> businesses = businessService.findAllBusinesses();
         List<Product> categoryProducts = new ArrayList<>();
 
         for(Business b : businesses) {
-            String category= b.getBusinessCategory();
-            category = category.replaceAll("Store", "");
-            category = category.replaceAll("Shop", "");
-            category = category.trim();
-            if(category.equalsIgnoreCase(getcategory)) {
-                if (!b.getProducts().isEmpty()) {
-                    for (Product p : b.getProducts()) {
-                        categoryProducts.add(p);
+            Set<Pincode> bPincodes = b.getPincodes();
+            if(pincode != 0) {
+                for (Pincode pin : bPincodes) {
+                    if (pin.getPincode() == pincode) {
+                        getCategoryProduct(b,getcategory, categoryProducts);
                     }
                 }
+            } else {
+                getCategoryProduct(b,getcategory,categoryProducts);
             }
         }
         return categoryProducts;
     }
 
-    public List<Product> getMostPopularProducts()
+    public List<Product> getCategoryProduct(Business b, String getcategory, List<Product> categoryProducts) {
+        String category = trimCategory(b.getBusinessCategory());
+        if (category.equalsIgnoreCase(getcategory)) {
+            if (!b.getProducts().isEmpty()) {
+                for (Product p : b.getProducts())
+                    categoryProducts.add(p);
+            }
+        }
+        return categoryProducts;
+    }
+
+    public List<Product> getMostPopularProducts(int pincode)
     {
         List<Product> products = getAllProducts();
         List<Product> popularProducts = products.stream()
@@ -157,17 +194,41 @@ public class ProductService {
 
         List<Product> mostPopularProducts=new ArrayList<>();
 
-        if(popularProducts!=null && popularProducts.size()>10)
-        {
-            for(int i=0;i<10;i++)
-            {
-                mostPopularProducts.add(popularProducts.get(i));
+        if(popularProducts!=null) {
+            for (Product product : popularProducts) {
+                Business b = businessService.getProductBusiness(product);
+
+                if(b != null && mostPopularProducts.size() <= 10) {
+                    Set<Pincode> bPincodes = b.getPincodes();
+                    if(pincode != 0) {
+                        for (Pincode p : bPincodes) {
+                            if (p.getPincode() == pincode) {
+                                mostPopularProducts.add(product);
+                            }
+                        }
+                    } else {
+                        mostPopularProducts.add(product);
+                    }
+
+                }
             }
         }
-        else
-        {
-            mostPopularProducts = popularProducts;
-        }
         return mostPopularProducts;
+    }
+
+    public List<Product> getTagWiseProducts(String tag) {
+        List<Product> products = productRepository.findAll();
+        List<Product> tagWiseProducts = new ArrayList<>();
+        for(Product p : products) {
+            Set<ProductTags> productTags= p.getProductTags();
+            if(!p.getProductTags().isEmpty()) {
+                for (ProductTags pt : productTags) {
+                    if (pt.getTag().equalsIgnoreCase(tag)) {
+                        tagWiseProducts.add(p);
+                    }
+                }
+            }
+        }
+        return tagWiseProducts;
     }
 }
